@@ -20,12 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ['add_resource', 'add_resource_type', 'get_collector', 'get_resource_types', 'get_resources']
+
+
+from proxyscrape.errors import CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError, \
+                               InvalidResourceError, InvalidResourceTypeError
 from proxyscrape.scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
 from proxyscrape.stores import Store
 
-__all__ = ['Collector', 'add_resource', 'add_resource_type', 'get_resource_types', 'get_resources']
 
 # TODO: Alter filters based on 'country', 'anonymous', 'https', 'version'
+# TODO: Ensure thread-safe locks around collector creation / retrieval
+# TODO: Ensure other thread-safe operations...
+
+# Module-level references to collectors
+COLLECTORS = {}
 
 
 def _is_iterable(obj):
@@ -60,6 +69,20 @@ def add_resource_type(name):
         RESOURCE_TYPE_MAP[name] = set()
 
 
+def create_collector(name, resource_types, refresh_interval=3600, resources=None):
+    if name in COLLECTORS:
+        raise CollectorAlreadyDefinedError(f'{name} already defined as a collector')
+
+    COLLECTORS[name] = Collector(resource_types, refresh_interval, resources)
+
+
+def get_collector(name):
+    if name in COLLECTORS:
+        return COLLECTORS[name]
+
+    raise CollectorNotFoundError(f'{name} is not a defined collector')
+
+
 def get_resource_types():
     return RESOURCE_TYPE_MAP.keys()
 
@@ -68,10 +91,8 @@ def get_resources():
     return RESOURCE_MAP.keys()
 
 
-# TODO: Add way to create collector and create internal store with name
-
 class Collector:
-    def __init__(self, resource_types, refresh_interval=3600, resources=None):
+    def __init__(self, resource_types, refresh_interval, resources):
         # Input validations
         self._validate_resource_types(resource_types)
         self._validate_resources(resources)
