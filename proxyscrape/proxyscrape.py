@@ -146,25 +146,24 @@ class Collector:
                 self._store.update_store(resource['id'], proxies)
 
     def _validate_resource_types(self, resource_types):
-        # TODO: Use custom exceptions
         if resource_types is None:
-            raise ValueError(f'a resource type must be specified')
+            raise InvalidResourceTypeError(f'a resource type must be specified')
 
         if _is_iterable(resource_types):
             if resource_types not in RESOURCE_TYPE_MAP:
-                raise ValueError(f'{resource_types} is an invalid resource type')
+                raise InvalidResourceTypeError(f'{resource_types} is an invalid resource type')
 
         elif set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
-            raise ValueError(f'{resource_types} defined an invalid resource type')
+            raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
 
     def _validate_resources(self, resources):
         for resource in resources:
             if resource not in RESOURCE_MAP:
-                raise ValueError(f'{resource} is an invalid resource')
+                raise InvalidResourceError(f'{resource} is an invalid resource')
 
     def apply_filter(self, filter_opts):
         if not isinstance(filter_opts, dict):
-            raise ValueError(f'{filter_opts} must be a dictionary')
+            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
 
         self._extend_filter(self._filter_opts, filter_opts)
 
@@ -183,7 +182,7 @@ class Collector:
 
     def get_proxy(self, filter_opts=None):
         if not isinstance(filter_opts, dict):
-            raise ValueError(f'{filter_opts} must be a dictionary')
+            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
 
         combined_filter_opts = dict()
         self._extend_filter(combined_filter_opts, self._filter_opts)
