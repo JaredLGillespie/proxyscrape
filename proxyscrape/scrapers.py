@@ -212,21 +212,6 @@ def get_ssl_proxy_proxies(url):
 
 
 RESOURCE_MAP = {
-    'socks-proxy': {
-        'url': 'https://www.socks-proxy.net',
-        'func': get_socks_proxy_proxies
-    },
-    'ssl-proxy': {
-        'url': 'https://www.sslproxies.org/',
-        'func': get_ssl_proxy_proxies
-    },
-    'us-proxy': {
-        'url': 'https://www.us-proxy.org',
-        'func': get_us_proxy_proxies,
-    },
-    'uk-proxy': {
-        'url': 'https://free-proxy-list.net/uk-proxy.html',
-        'func': get_uk_proxy_proxies
     },
     'free-proxy-list': {
         'url': 'http://www.free-proxy-list.net',
