@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+__all__ = ['ProxyResource', 'RESOURCE_MAP', 'RESOURCE_TYPE_MAP']
+
+
 from bs4 import BeautifulSoup
 from collections import namedtuple
 from threading import Lock
@@ -28,75 +31,81 @@ import re
 import time
 
 
-_Proxy = namedtuple('Proxy', ['host', 'port', 'country', 'anonymous', 'https', 'version', 'source'])
+_Proxy = namedtuple('Proxy', ['host', 'port', 'country', 'anonymous', 'type', 'source'])
 
 
 class ProxyResource:
     def __init__(self, url, func, refresh_interval):
-        self.url = url
-        self.func = func
-        self.refresh_interval = refresh_interval
-        self.lock = Lock()
-        self.last_refresh_time = 0
+        self._url = url
+        self._func = func
+        self._refresh_interval = refresh_interval
+        self._lock = Lock()
+        self._last_refresh_time = 0
 
-    def refresh(self):
-        if self.last_refresh_time + self.refresh_interval < time.time():
+    def refresh(self, force=False):
+        if not force and self._last_refresh_time + self._refresh_interval > time.time():
             return False, None
 
-        with self.lock:
+        with self._lock:
             # Check if updated before
-            if self.last_refresh_time + self.refresh_interval < time.time():
-                proxies = self.func(self.url)
-                self.last_refresh_time = time.time()
+            if force or self._last_refresh_time + self._refresh_interval < time.time():
+                proxies = self._func(self._url)
+                self._last_refresh_time = time.time()
                 return True, proxies
 
         return False, None
 
 
-def _get_proxy_daily_proxies_parse_inner(str):
+def _get_proxy_daily_proxies_parse_inner(text):
     inner_reg = re.findall(r'''
             ([0-9]{1,3}\. # Host Address
             [0-9]{1,3}\.
             [0-9]{1,3}\.
             [0-9]{1,3}
             :[0-9]{1,5}) # Port Number
-        ''', str, re.X | re.S)
+        ''', text, re.X | re.S)
 
     if inner_reg:
-        return {_Proxy(*i.split(':'), None, None, None, None, 'proxy-daily')
+        return {_Proxy(*i.split(':'), None, None, None, 'proxy-daily')
                 for i in inner_reg}
     return set()
 
 
-def get_proxy_daily_proxies_http(str):
+def get_proxy_daily_proxies_http(url):
+    response = requests.get(url)
+
     outer_reg = re.findall(r'''
         Free\sHttp/Https\sProxy\sList 
         .*
         Free\sSocks4\sProxy\sList
-    ''', str, re.X | re.S)
+    ''', response.text, re.X | re.S)
 
     if outer_reg:
         return _get_proxy_daily_proxies_parse_inner(outer_reg[0])
     return set()
 
 
-def get_proxy_daily_proxies_socks4(str):
+def get_proxy_daily_proxies_socks4(url):
+    response = requests.get(url)
+
     outer_reg = re.findall(r'''
          Free\sSocks4\sProxy\sList
         .*
         Free\sSocks5\sProxy\sList
-    ''', str, re.X | re.S)
+    ''', response.text, re.X | re.S)
 
     if outer_reg:
         return _get_proxy_daily_proxies_parse_inner(outer_reg[0])
     return set()
 
 
-def get_proxy_daily_proxies_socks5(str):
+def get_proxy_daily_proxies_socks5(url):
+    response = requests.get(url)
+
     outer_reg = re.findall(r'''
          Free\sSocks5\sProxy\sList
         .*
-    ''', str, re.X | re.S)
+    ''', response.text, re.X | re.S)
 
     if outer_reg:
         return _get_proxy_daily_proxies_parse_inner(outer_reg[0])
@@ -115,9 +124,9 @@ def get_us_proxy_proxies(url):
         port = rows[1]
         country = rows[3].lower()
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        https = rows[6].lower() == 'yes'
+        version = 'https' if rows[6].lower() == 'yes' else 'http'
 
-        proxies.add(_Proxy(host, port, country, anonymous, https, None, 'us-proxy'))
+        proxies.add(_Proxy(host, port, country, anonymous, version, 'us-proxy'))
 
     return proxies
 
@@ -134,9 +143,14 @@ def get_uk_proxy_proxies(url):
         port = rows[1]
         country = rows[3].lower()
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        https = rows[6].lower() == 'yes'
+        version = 'https' if rows[6].lower() == 'yes' else 'http'
 
-        proxies.add(_Proxy(host, port, country, anonymous, https, None, 'uk-proxy'))
+        proxies.add(_Proxy(host, port, country, anonymous, version, 'uk-proxy'))
+
+    return proxies
+
+
+
 
     return proxies
 
@@ -153,9 +167,9 @@ def get_free_proxy_list_proxies(url):
         port = rows[1]
         country = rows[3].lower()
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        https = rows[6].lower() == 'yes'
+        version = 'https' if rows[6].lower() == 'yes' else 'http'
 
-        proxies.add(_Proxy(host, port, country, anonymous, https, None, 'free-proxy-list'))
+        proxies.add(_Proxy(host, port, country, anonymous, version, 'free-proxy-list'))
 
     return proxies
 
@@ -173,9 +187,8 @@ def get_socks_proxy_proxies(url):
         country = rows[3].lower()
         version = rows[4].lower()
         anonymous = rows[5].lower() in ('anonymous', 'elite proxy')
-        https = rows[6].lower() == 'yes'
 
-        proxies.add(_Proxy(host, port, country, anonymous, https, version, 'socks-proxy'))
+        proxies.add(_Proxy(host, port, country, anonymous, version, 'socks-proxy'))
 
     return proxies
 
@@ -192,9 +205,8 @@ def get_ssl_proxy_proxies(url):
         port = rows[1]
         country = rows[3].lower()
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        https = rows[6].lower() == 'yes'
 
-        proxies.add(_Proxy(host, port, country, anonymous, https, None, 'ssl-proxy'))
+        proxies.add(_Proxy(host, port, country, anonymous, 'https', 'ssl-proxy'))
 
     return proxies
 
@@ -233,7 +245,6 @@ RESOURCE_MAP = {
         'func': get_proxy_daily_proxies_socks5
     }
 }
-
 
 RESOURCE_TYPE_MAP = {
     'http': {
