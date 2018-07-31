@@ -24,20 +24,33 @@ import random
 import uuid
 
 
+FILTER_OPTIONS = {
+    'country',  # united states, canada, ...
+    'anonymous',  # True, False
+    'type',  # http, https, socks4, socks5, ...
+}
+
+
 class Store:
     def __init__(self):
         # Maps a uuid to a store
         self._stores = {}
 
     @staticmethod
-    def _filter_proxies(proxies, filter_opt=None):
+    def _filter_proxies(proxies, filter_opt=None, blacklist=None):
         if not filter_opt:
-            return None
+            if not blacklist:
+                return proxies
+            return proxies.difference(blacklist)
 
         def filter_func(proxy):
-            for attr, value in filter_opt.items():
-                if getattr(proxy, attr, None) != value:
+            for attr, values in filter_opt.items():
+                if getattr(proxy, attr, None) not in values:
                     return False
+
+            if blacklist and proxy in blacklist:
+                return False
+
             return True
 
         return filter(filter_func, proxies)
@@ -47,16 +60,16 @@ class Store:
         self._stores[id] = set()
         return id
 
-    def retrieve_proxy(self, filter_opts=None):
+    def get_proxy(self, filter_opts=None, blacklist=None):
         proxies = set()
-        for store in self._stores:
+        for store in self._stores.values():
             proxies.update(store)
 
         # No proxies found in any store
         if not proxies:
             return None
 
-        filtered_proxies = self._filter_proxies(proxies, filter_opts)
+        filtered_proxies = self._filter_proxies(proxies, filter_opts, blacklist)
 
         # No proxies found based on filter
         if not filtered_proxies:

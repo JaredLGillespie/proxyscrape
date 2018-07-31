@@ -29,7 +29,6 @@ from proxyscrape.scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
 from proxyscrape.stores import Store
 
 
-# TODO: Alter filters based on 'country', 'anonymous', 'https', 'version'
 # TODO: Ensure thread-safe locks around collector creation / retrieval
 # TODO: Ensure other thread-safe operations...
 
@@ -38,6 +37,9 @@ COLLECTORS = {}
 
 
 def _is_iterable(obj):
+    if isinstance(obj, str):
+        return False
+
     try:
         iter(obj)
         return True
@@ -93,18 +95,19 @@ def get_resources():
 
 class Collector:
     def __init__(self, resource_types, refresh_interval, resources):
+        self._store = Store()
+        self._blacklist = set()
+        self._resource_types = set(resource_types) if _is_iterable(resource_types) else {resource_types, }
+
         # Input validations
-        self._validate_resource_types(resource_types)
+        self._validate_resource_types(self._resource_types)
+        resources = self._parse_resources(self._resource_types, resources)
         self._validate_resources(resources)
 
-        self._store = Store()
-        self._black_list = set()
-        self._resource_types = set(resource_types) if _is_iterable(resource_types) else {resource_types, }
-        self._resource_map = self._create_resource_map(self._resource_types, resources, refresh_interval)
-        self._filter_opts = dict()
+        self._resource_map = self._create_resource_map(resources, refresh_interval)
+        self._filter_opts = {'version': self._resource_types.copy()}
 
-    def _create_resource_map(self, resource_types, resources, refresh_interval):
-        resources = self._parse_resources(resource_types, resources)
+    def _create_resource_map(self, resources, refresh_interval):
         resource_map = dict()
         for resource in resources:
             id = self._store.add_store()
@@ -118,6 +121,9 @@ class Collector:
         return resource_map
 
     def _extend_filter(self, existing_filter_opts, new_filter_opts):
+        if not new_filter_opts:
+            return
+
         for key, value in new_filter_opts.items():
             if not _is_iterable(value):
                 value = {value, }
@@ -133,28 +139,44 @@ class Collector:
         if resources is None:
             res = set()
             for resource_type in resource_types:
-                if resource_type in resources:
-                    res.update(resources[resource_type])
+                if resource_type in RESOURCE_TYPE_MAP:
+                    res.update(RESOURCE_TYPE_MAP[resource_type])
             return res
 
-    def _refresh_resources(self):
-        # TODO: Need to do asynchronously + parallel
-        for resource in self._resource_map:
-            refreshed, proxies = resource['proxy-resource'].refresh()
+        if _is_iterable(resources):
+            return set(resources)
+        else:
+            return {resources, }
+
+    def _refresh_resources(self, force):
+        # TODO: Need to do asynchronously + concurrently
+        for resource in self._resource_map.values():
+            refreshed, proxies = resource['proxy-resource'].refresh(force)
 
             if refreshed:
                 self._store.update_store(resource['id'], proxies)
+
+    def _validate_filter_opts(self, filter_opts):
+        if not filter_opts:
+            return
+
+        if not isinstance(filter_opts, dict):
+            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
+
+        for key in filter_opts:
+            if key not in FILTER_OPTIONS:
+                raise InvalidFilterOptionError(f'{key} is an invalid filter option')
 
     def _validate_resource_types(self, resource_types):
         if resource_types is None:
             raise InvalidResourceTypeError(f'a resource type must be specified')
 
         if _is_iterable(resource_types):
+            if set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
+                raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
+        else:
             if resource_types not in RESOURCE_TYPE_MAP:
                 raise InvalidResourceTypeError(f'{resource_types} is an invalid resource type')
-
-        elif set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
-            raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
 
     def _validate_resources(self, resources):
         for resource in resources:
@@ -162,9 +184,7 @@ class Collector:
                 raise InvalidResourceError(f'{resource} is an invalid resource')
 
     def apply_filter(self, filter_opts):
-        if not isinstance(filter_opts, dict):
-            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
-
+        self._validate_filter_opts(filter_opts)
         self._extend_filter(self._filter_opts, filter_opts)
 
     def blacklist_proxy(self, proxies):
@@ -172,21 +192,23 @@ class Collector:
             proxies = {proxies, }
         proxies = set(proxies)
 
-        self._black_list.update(proxies)
+        self._blacklist.update(proxies)
 
     def clear_blacklist(self):
-        self._black_list.clear()
+        self._blacklist.clear()
 
     def clear_filter(self):
-        self._filter_opts.clear()
+        self._filter_opts = {'version': self._resource_types.copy()}
 
     def get_proxy(self, filter_opts=None):
-        if not isinstance(filter_opts, dict):
-            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
+        self._validate_filter_opts(filter_opts)
 
         combined_filter_opts = dict()
         self._extend_filter(combined_filter_opts, self._filter_opts)
         self._extend_filter(combined_filter_opts, filter_opts)
+
+        self._refresh_resources(False)
+        return self._store.get_proxy(filter_opts, self._blacklist)
 
     def remove_proxy(self, proxies):
         if not _is_iterable(proxies):
@@ -196,3 +218,6 @@ class Collector:
             resource_type = proxy.source
             id = self._resource_map[resource_type]['id']
             self._store.remove_proxy(id, proxy)
+
+    def refresh_proxies(self):
+        self._refresh_resources(True)
