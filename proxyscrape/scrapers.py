@@ -150,7 +150,21 @@ def get_uk_proxy_proxies(url):
     return proxies
 
 
+def get_anonymous_proxies(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    table = soup.find('table', {'id': 'proxylisttable'})
+    proxies = set()
 
+    for row in table.find_all('tr'):
+        rows = list(map(lambda x: x.text, row))
+        host = rows[0]
+        port = rows[1]
+        country = rows[3].lower()
+        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if rows[6].lower() == 'yes' else 'http'
+
+        proxies.add(_Proxy(host, port, country, anonymous, version, 'anonymous-proxy'))
 
     return proxies
 
@@ -212,6 +226,9 @@ def get_ssl_proxy_proxies(url):
 
 
 RESOURCE_MAP = {
+    'anonymous-proxy': {
+        'url': 'https://free-proxy-list.net/anonymous-proxy.html',
+        'func': get_anonymous_proxies
     },
     'free-proxy-list': {
         'url': 'http://www.free-proxy-list.net',
@@ -228,6 +245,22 @@ RESOURCE_MAP = {
     'proxy-daily-socks5': {
         'url': 'http://www.proxy-daily.com',
         'func': get_proxy_daily_proxies_socks5
+    },
+    'socks-proxy': {
+        'url': 'https://www.socks-proxy.net',
+        'func': get_socks_proxy_proxies
+    },
+    'ssl-proxy': {
+        'url': 'https://www.sslproxies.org/',
+        'func': get_ssl_proxy_proxies
+    },
+    'uk-proxy': {
+        'url': 'https://free-proxy-list.net/uk-proxy.html',
+        'func': get_uk_proxy_proxies
+    },
+    'us-proxy': {
+        'url': 'https://www.us-proxy.org',
+        'func': get_us_proxy_proxies,
     }
 }
 
@@ -236,14 +269,16 @@ RESOURCE_TYPE_MAP = {
         'us-proxy',
         'uk-proxy',
         'free-proxy-list',
-        'proxy-daily-http'
+        'proxy-daily-http',
+        'anonymous-proxy'
     },
     'https': {
         'us-proxy',
         'uk-proxy',
         'free-proxy-list',
         'proxy-daily-http',
-        'ssl-proxy'
+        'ssl-proxy',
+        'anonymous-proxy'
     },
     'socks4': {
         'socks-proxy',
