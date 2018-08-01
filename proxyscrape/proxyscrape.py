@@ -20,13 +20,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['add_resource', 'add_resource_type', 'get_collector', 'get_resource_types', 'get_resources']
+__all__ = ['add_resource', 'add_resource_type', 'create_collector', 'get_collector', 'get_resource_types',
+           'get_resources']
 
 
-from proxyscrape.errors import CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError, \
-                               InvalidResourceError, InvalidResourceTypeError
-from proxyscrape.scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
-from proxyscrape.stores import Store
+from threading import Lock
+
+from .errors import CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError, \
+                    InvalidResourceAttributeError, InvalidResourceError, InvalidResourceTypeError, \
+                    ResourceAlreadyDefinedError
+from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
+from .stores import Store, FILTER_OPTIONS
 
 
 # TODO: Ensure thread-safe locks around collector creation / retrieval
@@ -34,6 +38,9 @@ from proxyscrape.stores import Store
 
 # Module-level references to collectors
 COLLECTORS = {}
+_collector_lock = Lock()
+_resource_lock = Lock()
+_resource_type_lock = Lock()
 
 
 def _is_iterable(obj):
@@ -48,34 +55,51 @@ def _is_iterable(obj):
 
 
 def add_resource(name, resource, resource_types):
+    if resource in RESOURCE_MAP:
+        raise ResourceAlreadyDefinedError(f'{resource} is already defined')
+
     if not _is_iterable(resource_types):
         resource_types = {resource_types, }
 
     for attr in {'url', 'func'}:
         if attr not in resource:
-            # TODO: Use custom exceptions
-            raise ValueError(f'{attr} not defined for resource')
-
-    RESOURCE_MAP[name] = resource
+            raise InvalidResourceAttributeError(f'{attr} not defined for resource')
 
     for resource_type in resource_types:
-        # TODO: Use custom exceptions
         if resource_type not in RESOURCE_TYPE_MAP:
-            raise ValueError(f'{resource_type} is not a defined resource type')
+            raise InvalidResourceTypeError(f'{resource_type} is not a defined resource type')
 
-        RESOURCE_TYPE_MAP[resource_type] = resource
+    with _resource_lock:
+        # Ensure not added by the time entered lock
+        if resource in RESOURCE_MAP:
+            raise ResourceAlreadyDefinedError(f'{resource} is already defined')
+
+        RESOURCE_MAP[name] = resource
+
+        for resource_type in resource_types:
+            RESOURCE_TYPE_MAP[resource_type] = resource
 
 
 def add_resource_type(name):
     if name not in RESOURCE_TYPE_MAP:
-        RESOURCE_TYPE_MAP[name] = set()
+        with _resource_type_lock:
+            # Ensure not added by the time entered lock
+            if name not in RESOURCE_TYPE_MAP:
+                RESOURCE_TYPE_MAP[name] = set()
 
 
 def create_collector(name, resource_types, refresh_interval=3600, resources=None):
     if name in COLLECTORS:
         raise CollectorAlreadyDefinedError(f'{name} already defined as a collector')
 
-    COLLECTORS[name] = Collector(resource_types, refresh_interval, resources)
+    with _collector_lock:
+        # Ensure not added by the time entered lock
+        if name in COLLECTORS:
+            raise CollectorAlreadyDefinedError(f'{name} already defined as a collector')
+
+        collector = Collector(resource_types, refresh_interval, resources)
+        COLLECTORS[name] = collector
+        return collector
 
 
 def get_collector(name):

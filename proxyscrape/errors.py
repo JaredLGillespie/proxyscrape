@@ -37,9 +37,17 @@ class InvalidFilterOptionError(ProxyScrapeBaseException):
     """Invalid Filter Option Error."""
 
 
+class InvalidResourceAttributeError(ProxyScrapeBaseException):
+    """Invalid Resource Attribute Error."""
+
+
 class InvalidResourceError(ProxyScrapeBaseException):
     """Invalid Resource Error."""
 
 
 class InvalidResourceTypeError(ProxyScrapeBaseException):
     """Invalid Resource Type Error."""
+
+
+class ResourceAlreadyDefinedError(ProxyScrapeBaseException):
+    """Collector Not Found Error."""
