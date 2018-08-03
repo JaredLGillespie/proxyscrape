@@ -74,10 +74,10 @@ class Store:
         filtered_proxies = self._filter_proxies(proxies, filter_opts, blacklist)
 
         # No proxies found based on filter
-        if not filtered_proxies:
+        if not set(filtered_proxies):
             return None
 
-        return random.sample(filtered_proxies, 1)
+        return random.sample(filtered_proxies, 1)[0]
 
     def remove_proxy(self, id, proxy):
         if id not in self._stores:
