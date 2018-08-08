@@ -53,6 +53,16 @@ class TestStores(unittest.TestCase):
 
         self.assertIsNone(actual)
 
+    def test_get_proxy_returns_proxy_if_not_filtered(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxy(filter_opts={'country': {'us', }})
+
+        self.assertEqual(actual, proxy)
+
     def test_get_proxy_returns_empty_if_blacklisted(self):
         store = Store()
         id = store.add_store()
@@ -63,13 +73,24 @@ class TestStores(unittest.TestCase):
 
         self.assertIsNone(actual)
 
-    def test_get_proxy_returns_empty_if_fileted_and_blacklisted(self):
+    def test_get_proxy_returns_empty_if_filtered_and_blacklisted(self):
         store = Store()
         id = store.add_store()
         proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
 
         store.update_store(id, {proxy, })
         actual = store.get_proxy(filter_opts={'country': {'uk', }},
+                                 blacklist={proxy, })
+
+        self.assertIsNone(actual)
+
+    def test_get_proxy_returns_empty_if_not_filtered_and_blacklisted(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxy(filter_opts={'country': {'us', }},
                                  blacklist={proxy, })
 
         self.assertIsNone(actual)

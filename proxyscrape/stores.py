@@ -39,14 +39,14 @@ class Store:
         self._lock = Lock()
 
     @staticmethod
-    def _filter_proxies(proxies, filter_opt=None, blacklist=None):
-        if not filter_opt:
+    def _filter_proxies(proxies, filter_opts=None, blacklist=None):
+        if not filter_opts:
             if not blacklist:
                 return proxies
             return proxies.difference(blacklist)
 
         def filter_func(proxy):
-            for attr, values in filter_opt.items():
+            for attr, values in filter_opts.items():
                 if getattr(proxy, attr, None) not in values:
                     return False
 
@@ -71,10 +71,10 @@ class Store:
         if not proxies:
             return None
 
-        filtered_proxies = self._filter_proxies(proxies, filter_opts, blacklist)
+        filtered_proxies = set(self._filter_proxies(proxies, filter_opts, blacklist))
 
         # No proxies found based on filter
-        if not set(filtered_proxies):
+        if not filtered_proxies:
             return None
 
         return random.sample(filtered_proxies, 1)[0]
@@ -83,8 +83,7 @@ class Store:
         if id not in self._stores:
             return
 
-        if self._stores[id]:
-            self._stores[id].difference_update({proxy, })
+        self._stores[id].difference_update({proxy, })
 
     def update_store(self, id, proxies):
         if id not in self._stores:
