@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['ProxyResource', 'RESOURCE_MAP', 'RESOURCE_TYPE_MAP']
+__all__ = ['Proxy', 'ProxyResource', 'RESOURCE_MAP', 'RESOURCE_TYPE_MAP']
 
 
 from bs4 import BeautifulSoup
@@ -31,7 +31,7 @@ import re
 import time
 
 
-_Proxy = namedtuple('Proxy', ['host', 'port', 'country', 'anonymous', 'type', 'source'])
+Proxy = namedtuple('Proxy', ['host', 'port', 'country', 'anonymous', 'type', 'source'])
 
 
 class ProxyResource:
@@ -56,6 +56,44 @@ class ProxyResource:
         return False, None
 
 
+def get_anonymous_proxies(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    table = soup.find('table', {'id': 'proxylisttable'})
+    proxies = set()
+
+    for row in table.find_all('tr'):
+        rows = list(map(lambda x: x.text, row))
+        host = rows[0]
+        port = rows[1]
+        country = rows[3].lower()
+        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if rows[6].lower() == 'yes' else 'http'
+
+        proxies.add(Proxy(host, port, country, anonymous, version, 'anonymous-proxy'))
+
+    return proxies
+
+
+def get_free_proxy_list_proxies(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    table = soup.find('table', {'id': 'proxylisttable'})
+    proxies = set()
+
+    for row in table.find_all('tr'):
+        rows = list(map(lambda x: x.text, row))
+        host = rows[0]
+        port = rows[1]
+        country = rows[3].lower()
+        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if rows[6].lower() == 'yes' else 'http'
+
+        proxies.add(Proxy(host, port, country, anonymous, version, 'free-proxy-list'))
+
+    return proxies
+
+
 def _get_proxy_daily_proxies_parse_inner(text):
     inner_reg = re.findall(r'''
             ([0-9]{1,3}\. # Host Address
@@ -66,7 +104,7 @@ def _get_proxy_daily_proxies_parse_inner(text):
         ''', text, re.X | re.S)
 
     if inner_reg:
-        return {_Proxy(*i.split(':'), None, None, None, 'proxy-daily')
+        return {Proxy(*i.split(':'), None, None, None, 'proxy-daily')
                 for i in inner_reg}
     return set()
 
@@ -112,7 +150,26 @@ def get_proxy_daily_proxies_socks5(url):
     return set()
 
 
-def get_us_proxy_proxies(url):
+def get_socks_proxy_proxies(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    table = soup.find('table', {'id': 'proxylisttable'})
+    proxies = set()
+
+    for row in table.find_all('tr'):
+        rows = list(map(lambda x: x.text, row))
+        host = rows[0]
+        port = rows[1]
+        country = rows[3].lower()
+        version = rows[4].lower()
+        anonymous = rows[5].lower() in ('anonymous', 'elite proxy')
+
+        proxies.add(Proxy(host, port, country, anonymous, version, 'socks-proxy'))
+
+    return proxies
+
+
+def get_ssl_proxy_proxies(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.find('table', {'id': 'proxylisttable'})
@@ -124,9 +181,8 @@ def get_us_proxy_proxies(url):
         port = rows[1]
         country = rows[3].lower()
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if rows[6].lower() == 'yes' else 'http'
 
-        proxies.add(_Proxy(host, port, country, anonymous, version, 'us-proxy'))
+        proxies.add(Proxy(host, port, country, anonymous, 'https', 'ssl-proxy'))
 
     return proxies
 
@@ -145,12 +201,12 @@ def get_uk_proxy_proxies(url):
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
         version = 'https' if rows[6].lower() == 'yes' else 'http'
 
-        proxies.add(_Proxy(host, port, country, anonymous, version, 'uk-proxy'))
+        proxies.add(Proxy(host, port, country, anonymous, version, 'uk-proxy'))
 
     return proxies
 
 
-def get_anonymous_proxies(url):
+def get_us_proxy_proxies(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.find('table', {'id': 'proxylisttable'})
@@ -164,63 +220,7 @@ def get_anonymous_proxies(url):
         anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
         version = 'https' if rows[6].lower() == 'yes' else 'http'
 
-        proxies.add(_Proxy(host, port, country, anonymous, version, 'anonymous-proxy'))
-
-    return proxies
-
-
-def get_free_proxy_list_proxies(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
-
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if rows[6].lower() == 'yes' else 'http'
-
-        proxies.add(_Proxy(host, port, country, anonymous, version, 'free-proxy-list'))
-
-    return proxies
-
-
-def get_socks_proxy_proxies(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
-
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        version = rows[4].lower()
-        anonymous = rows[5].lower() in ('anonymous', 'elite proxy')
-
-        proxies.add(_Proxy(host, port, country, anonymous, version, 'socks-proxy'))
-
-    return proxies
-
-
-def get_ssl_proxy_proxies(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
-
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-
-        proxies.add(_Proxy(host, port, country, anonymous, 'https', 'ssl-proxy'))
+        proxies.add(Proxy(host, port, country, anonymous, version, 'us-proxy'))
 
     return proxies
 
