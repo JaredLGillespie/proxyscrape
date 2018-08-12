@@ -37,6 +37,10 @@ class InvalidFilterOptionError(ProxyScrapeBaseException):
     """Invalid Filter Option Error."""
 
 
+class InvalidHTMLError(ProxyScrapeBaseException):
+    """Invalid HTML Error."""
+
+
 class InvalidResourceAttributeError(ProxyScrapeBaseException):
     """Invalid Resource Attribute Error."""
 
@@ -47,6 +51,10 @@ class InvalidResourceError(ProxyScrapeBaseException):
 
 class InvalidResourceTypeError(ProxyScrapeBaseException):
     """Invalid Resource Type Error."""
+
+
+class RequestNotOKError(ProxyScrapeBaseException):
+    """Request Not OK Error."""
 
 
 class ResourceAlreadyDefinedError(ProxyScrapeBaseException):

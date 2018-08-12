@@ -30,6 +30,8 @@ import requests
 import re
 import time
 
+from .errors import InvalidHTMLError, RequestNotOKError
+
 
 Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'type', 'source'])
 
@@ -48,52 +50,68 @@ class ProxyResource:
 
         with self._lock:
             # Check if updated before
-            if force or self._last_refresh_time + self._refresh_interval < time.time():
-                proxies = self._func(self._url)
-                self._last_refresh_time = time.time()
-                return True, proxies
+            if force or self._last_refresh_time + self._refresh_interval <= time.time():
+
+                try:
+                    proxies = self._func(self._url)
+                    self._last_refresh_time = time.time()
+                    return True, proxies
+                except (InvalidHTMLError, RequestNotOKError):
+                    pass
 
         return False, None
 
 
 def get_anonymous_proxies(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
+    if not response.ok:
+        raise RequestNotOKError()
 
-    for row in table.find('tbody').find_all('tr'):
-        data = list(map(lambda x: x.text, row.find_all('td')))
-        host = data[0]
-        port = data[1]
-        code = data[2].lower()
-        country = data[3].lower()
-        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if data[6].lower() == 'yes' else 'http'
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table', {'id': 'proxylisttable'})
+        proxies = set()
 
-        proxies.add(Proxy(host, port, code, country, anonymous, version, 'anonymous-proxy'))
+        for row in table.find('tbody').find_all('tr'):
+            data = list(map(lambda x: x.text, row.find_all('td')))
+            host = data[0]
+            port = data[1]
+            code = data[2].lower()
+            country = data[3].lower()
+            anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+            version = 'https' if data[6].lower() == 'yes' else 'http'
 
-    return proxies
+            proxies.add(Proxy(host, port, code, country, anonymous, version, 'anonymous-proxy'))
+
+        return proxies
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 
 def get_free_proxy_list_proxies(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
+    if not response.ok:
+        raise RequestNotOKError()
 
-    for row in table.find('tbody').find_all('tr'):
-        data = list(map(lambda x: x.text, row.find_all('td')))
-        host = data[0]
-        port = data[1]
-        code = data[2].lower()
-        country = data[3].lower()
-        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if data[6].lower() == 'yes' else 'http'
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table', {'id': 'proxylisttable'})
+        proxies = set()
 
-        proxies.add(Proxy(host, port, code, country, anonymous, version, 'free-proxy-list'))
+        for row in table.find('tbody').find_all('tr'):
+            data = list(map(lambda x: x.text, row.find_all('td')))
+            host = data[0]
+            port = data[1]
+            code = data[2].lower()
+            country = data[3].lower()
+            anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+            version = 'https' if data[6].lower() == 'yes' else 'http'
 
-    return proxies
+            proxies.add(Proxy(host, port, code, country, anonymous, version, 'free-proxy-list'))
+
+        return proxies
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 
 def _get_proxy_daily_proxies_parse_inner(text, type, source):
@@ -105,14 +123,17 @@ def _get_proxy_daily_proxies_parse_inner(text, type, source):
             :[0-9]{1,5}) # Port Number
         ''', text, re.X | re.S)
 
-    if inner_reg:
-        return {Proxy(*i.split(':'), None, None, None, type, source)
-                for i in inner_reg}
-    return set()
+    if not inner_reg:
+        raise InvalidHTMLError()
+
+    return {Proxy(*i.split(':'), None, None, None, type, source)
+            for i in inner_reg}
 
 
 def get_proxy_daily_http_proxies(url):
     response = requests.get(url)
+    if not response.ok:
+        raise RequestNotOKError()
 
     outer_reg = re.findall(r'''
         Free\sHttp/Https\sProxy\sList 
@@ -120,13 +141,16 @@ def get_proxy_daily_http_proxies(url):
         Free\sSocks4\sProxy\sList
     ''', response.text, re.X | re.S)
 
-    if outer_reg:
-        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'http', 'proxy-daily-http')
-    return set()
+    if not outer_reg:
+        raise InvalidHTMLError()
+
+    return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'http', 'proxy-daily-http')
 
 
 def get_proxy_daily_socks4_proxies(url):
     response = requests.get(url)
+    if not response.ok:
+        raise RequestNotOKError()
 
     outer_reg = re.findall(r'''
          Free\sSocks4\sProxy\sList
@@ -134,101 +158,129 @@ def get_proxy_daily_socks4_proxies(url):
         Free\sSocks5\sProxy\sList
     ''', response.text, re.X | re.S)
 
-    if outer_reg:
-        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks4', 'proxy-daily-socks4')
-    return set()
+    if not outer_reg:
+        raise InvalidHTMLError()
+
+    return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks4', 'proxy-daily-socks4')
 
 
 def get_proxy_daily_socks5_proxies(url):
     response = requests.get(url)
+    if not response.ok:
+        raise RequestNotOKError()
 
     outer_reg = re.findall(r'''
          Free\sSocks5\sProxy\sList
         .*
     ''', response.text, re.X | re.S)
 
-    if outer_reg:
-        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks5', 'proxy-daily-socks5')
-    return set()
+    if not outer_reg:
+        raise InvalidHTMLError()
+
+    return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks5', 'proxy-daily-socks5')
 
 
 def get_socks_proxies(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
+    if not response.ok:
+        raise RequestNotOKError()
 
-    for row in table.find('tbody').find_all('tr'):
-        data = list(map(lambda x: x.text, row.find_all('td')))
-        host = data[0]
-        port = data[1]
-        code = data[2].lower()
-        country = data[3].lower()
-        version = data[4].lower()
-        anonymous = data[5].lower() in ('anonymous', 'elite proxy')
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table', {'id': 'proxylisttable'})
+        proxies = set()
 
-        proxies.add(Proxy(host, port, code, country, anonymous, version, 'socks-proxy'))
+        for row in table.find('tbody').find_all('tr'):
+            data = list(map(lambda x: x.text, row.find_all('td')))
+            host = data[0]
+            port = data[1]
+            code = data[2].lower()
+            country = data[3].lower()
+            version = data[4].lower()
+            anonymous = data[5].lower() in ('anonymous', 'elite proxy')
 
-    return proxies
+            proxies.add(Proxy(host, port, code, country, anonymous, version, 'socks-proxy'))
+
+        return proxies
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 
 def get_ssl_proxies(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
+    if not response.ok:
+        raise RequestNotOKError()
 
-    for row in table.find('tbody').find_all('tr'):
-        data = list(map(lambda x: x.text, row.find_all('td')))
-        host = data[0]
-        port = data[1]
-        code = data[2].lower()
-        country = data[3].lower()
-        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table', {'id': 'proxylisttable'})
+        proxies = set()
 
-        proxies.add(Proxy(host, port, code, country, anonymous, 'https', 'ssl-proxy'))
+        for row in table.find('tbody').find_all('tr'):
+            data = list(map(lambda x: x.text, row.find_all('td')))
+            host = data[0]
+            port = data[1]
+            code = data[2].lower()
+            country = data[3].lower()
+            anonymous = data[4].lower() in ('anonymous', 'elite proxy')
 
-    return proxies
+            proxies.add(Proxy(host, port, code, country, anonymous, 'https', 'ssl-proxy'))
+
+        return proxies
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 
 def get_uk_proxies(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
+    if not response.ok:
+        raise RequestNotOKError()
 
-    for row in table.find('tbody').find_all('tr'):
-        data = list(map(lambda x: x.text, row.find_all('td')))
-        host = data[0]
-        port = data[1]
-        code = data[2].lower()
-        country = data[3].lower()
-        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if data[6].lower() == 'yes' else 'http'
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table', {'id': 'proxylisttable'})
+        proxies = set()
 
-        proxies.add(Proxy(host, port, code, country, anonymous, version, 'uk-proxy'))
+        for row in table.find('tbody').find_all('tr'):
+            data = list(map(lambda x: x.text, row.find_all('td')))
+            host = data[0]
+            port = data[1]
+            code = data[2].lower()
+            country = data[3].lower()
+            anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+            version = 'https' if data[6].lower() == 'yes' else 'http'
 
-    return proxies
+            proxies.add(Proxy(host, port, code, country, anonymous, version, 'uk-proxy'))
+
+        return proxies
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 
 def get_us_proxies(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    table = soup.find('table', {'id': 'proxylisttable'})
-    proxies = set()
+    if not response.ok:
+        raise RequestNotOKError()
 
-    for row in table.find('tbody').find_all('tr'):
-        data = list(map(lambda x: x.text, row.find_all('td')))
-        host = data[0]
-        port = data[1]
-        code = data[2].lower()
-        country = data[3].lower()
-        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if data[6].lower() == 'yes' else 'http'
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table', {'id': 'proxylisttable'})
+        proxies = set()
 
-        proxies.add(Proxy(host, port, code, country, anonymous, version, 'us-proxy'))
+        for row in table.find('tbody').find_all('tr'):
+            data = list(map(lambda x: x.text, row.find_all('td')))
+            host = data[0]
+            port = data[1]
+            code = data[2].lower()
+            country = data[3].lower()
+            anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+            version = 'https' if data[6].lower() == 'yes' else 'http'
 
-    return proxies
+            proxies.add(Proxy(host, port, code, country, anonymous, version, 'us-proxy'))
+
+        return proxies
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 
 RESOURCE_MAP = {
