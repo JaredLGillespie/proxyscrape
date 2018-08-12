@@ -96,7 +96,7 @@ def get_free_proxy_list_proxies(url):
     return proxies
 
 
-def _get_proxy_daily_proxies_parse_inner(text, source):
+def _get_proxy_daily_proxies_parse_inner(text, type, source):
     inner_reg = re.findall(r'''
             ([0-9]{1,3}\. # Host Address
             [0-9]{1,3}\.
@@ -106,7 +106,7 @@ def _get_proxy_daily_proxies_parse_inner(text, source):
         ''', text, re.X | re.S)
 
     if inner_reg:
-        return {Proxy(*i.split(':'), None, None, None, 'http', source)
+        return {Proxy(*i.split(':'), None, None, None, type, source)
                 for i in inner_reg}
     return set()
 
@@ -121,7 +121,7 @@ def get_proxy_daily_http_proxies(url):
     ''', response.text, re.X | re.S)
 
     if outer_reg:
-        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'proxy-daily-http')
+        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'http', 'proxy-daily-http')
     return set()
 
 
@@ -135,7 +135,7 @@ def get_proxy_daily_socks4_proxies(url):
     ''', response.text, re.X | re.S)
 
     if outer_reg:
-        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'proxy-daily-socks4')
+        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks4', 'proxy-daily-socks4')
     return set()
 
 
@@ -148,7 +148,7 @@ def get_proxy_daily_socks5_proxies(url):
     ''', response.text, re.X | re.S)
 
     if outer_reg:
-        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'proxy-daily-socks5')
+        return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks5', 'proxy-daily-socks5')
     return set()
 
 
