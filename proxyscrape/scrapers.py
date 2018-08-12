@@ -111,7 +111,7 @@ def _get_proxy_daily_proxies_parse_inner(text, source):
     return set()
 
 
-def get_proxy_daily_proxies_http(url):
+def get_proxy_daily_http_proxies(url):
     response = requests.get(url)
 
     outer_reg = re.findall(r'''
@@ -125,7 +125,7 @@ def get_proxy_daily_proxies_http(url):
     return set()
 
 
-def get_proxy_daily_proxies_socks4(url):
+def get_proxy_daily_socks4_proxies(url):
     response = requests.get(url)
 
     outer_reg = re.findall(r'''
@@ -139,7 +139,7 @@ def get_proxy_daily_proxies_socks4(url):
     return set()
 
 
-def get_proxy_daily_proxies_socks5(url):
+def get_proxy_daily_socks5_proxies(url):
     response = requests.get(url)
 
     outer_reg = re.findall(r'''
@@ -152,7 +152,7 @@ def get_proxy_daily_proxies_socks5(url):
     return set()
 
 
-def get_socks_proxy_proxies(url):
+def get_socks_proxies(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.find('table', {'id': 'proxylisttable'})
@@ -172,7 +172,7 @@ def get_socks_proxy_proxies(url):
     return proxies
 
 
-def get_ssl_proxy_proxies(url):
+def get_ssl_proxies(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.find('table', {'id': 'proxylisttable'})
@@ -191,7 +191,7 @@ def get_ssl_proxy_proxies(url):
     return proxies
 
 
-def get_uk_proxy_proxies(url):
+def get_uk_proxies(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.find('table', {'id': 'proxylisttable'})
@@ -211,7 +211,7 @@ def get_uk_proxy_proxies(url):
     return proxies
 
 
-def get_us_proxy_proxies(url):
+def get_us_proxies(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
     table = soup.find('table', {'id': 'proxylisttable'})
@@ -242,31 +242,31 @@ RESOURCE_MAP = {
     },
     'proxy-daily-http': {
         'url': 'http://www.proxy-daily.com',
-        'func': get_proxy_daily_proxies_http
+        'func': get_proxy_daily_http_proxies
     },
     'proxy-daily-socks4': {
         'url': 'http://www.proxy-daily.com',
-        'func': get_proxy_daily_proxies_socks4
+        'func': get_proxy_daily_socks4_proxies
     },
     'proxy-daily-socks5': {
         'url': 'http://www.proxy-daily.com',
-        'func': get_proxy_daily_proxies_socks5
+        'func': get_proxy_daily_socks5_proxies
     },
     'socks-proxy': {
         'url': 'https://www.socks-proxy.net',
-        'func': get_socks_proxy_proxies
+        'func': get_socks_proxies
     },
     'ssl-proxy': {
         'url': 'https://www.sslproxies.org/',
-        'func': get_ssl_proxy_proxies
+        'func': get_ssl_proxies
     },
     'uk-proxy': {
         'url': 'https://free-proxy-list.net/uk-proxy.html',
-        'func': get_uk_proxy_proxies
+        'func': get_uk_proxies
     },
     'us-proxy': {
         'url': 'https://www.us-proxy.org',
-        'func': get_us_proxy_proxies,
+        'func': get_us_proxies,
     }
 }
 
