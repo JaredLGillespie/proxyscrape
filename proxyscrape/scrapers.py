@@ -31,7 +31,7 @@ import re
 import time
 
 
-Proxy = namedtuple('Proxy', ['host', 'port', 'country', 'anonymous', 'type', 'source'])
+Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'type', 'source'])
 
 
 class ProxyResource:
@@ -66,11 +66,12 @@ def get_anonymous_proxies(url):
         data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
+        code = data[2].lower()
         country = data[3].lower()
         anonymous = data[4].lower() in ('anonymous', 'elite proxy')
         version = 'https' if data[6].lower() == 'yes' else 'http'
 
-        proxies.add(Proxy(host, port, country, anonymous, version, 'anonymous-proxy'))
+        proxies.add(Proxy(host, port, code, country, anonymous, version, 'anonymous-proxy'))
 
     return proxies
 
@@ -85,11 +86,12 @@ def get_free_proxy_list_proxies(url):
         data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
+        code = data[2].lower()
         country = data[3].lower()
         anonymous = data[4].lower() in ('anonymous', 'elite proxy')
         version = 'https' if data[6].lower() == 'yes' else 'http'
 
-        proxies.add(Proxy(host, port, country, anonymous, version, 'free-proxy-list'))
+        proxies.add(Proxy(host, port, code, country, anonymous, version, 'free-proxy-list'))
 
     return proxies
 
@@ -160,11 +162,12 @@ def get_socks_proxy_proxies(url):
         data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
+        code = data[2].lower()
         country = data[3].lower()
         version = data[4].lower()
         anonymous = data[5].lower() in ('anonymous', 'elite proxy')
 
-        proxies.add(Proxy(host, port, country, anonymous, version, 'socks-proxy'))
+        proxies.add(Proxy(host, port, code, country, anonymous, version, 'socks-proxy'))
 
     return proxies
 
@@ -179,10 +182,11 @@ def get_ssl_proxy_proxies(url):
         data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
+        code = data[2].lower()
         country = data[3].lower()
         anonymous = data[4].lower() in ('anonymous', 'elite proxy')
 
-        proxies.add(Proxy(host, port, country, anonymous, 'https', 'ssl-proxy'))
+        proxies.add(Proxy(host, port, code, country, anonymous, 'https', 'ssl-proxy'))
 
     return proxies
 
@@ -197,11 +201,12 @@ def get_uk_proxy_proxies(url):
         data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
+        code = data[2].lower()
         country = data[3].lower()
         anonymous = data[4].lower() in ('anonymous', 'elite proxy')
         version = 'https' if data[6].lower() == 'yes' else 'http'
 
-        proxies.add(Proxy(host, port, country, anonymous, version, 'uk-proxy'))
+        proxies.add(Proxy(host, port, code, country, anonymous, version, 'uk-proxy'))
 
     return proxies
 
@@ -216,11 +221,12 @@ def get_us_proxy_proxies(url):
         data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
+        code = data[2].lower()
         country = data[3].lower()
         anonymous = data[4].lower() in ('anonymous', 'elite proxy')
         version = 'https' if data[6].lower() == 'yes' else 'http'
 
-        proxies.add(Proxy(host, port, country, anonymous, version, 'us-proxy'))
+        proxies.add(Proxy(host, port, code, country, anonymous, version, 'us-proxy'))
 
     return proxies
 

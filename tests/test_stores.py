@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 import unittest
-from unittest.mock import Mock
 from proxyscrape.scrapers import Proxy
 from proxyscrape.stores import Store
 
@@ -46,27 +45,27 @@ class TestStores(unittest.TestCase):
     def test_get_proxy_returns_empty_if_filtered(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
-        actual = store.get_proxy(filter_opts={'country': {'uk', }})
+        actual = store.get_proxy(filter_opts={'code': {'uk', }})
 
         self.assertIsNone(actual)
 
     def test_get_proxy_returns_proxy_if_not_filtered(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
-        actual = store.get_proxy(filter_opts={'country': {'us', }})
+        actual = store.get_proxy(filter_opts={'code': {'us', }})
 
         self.assertEqual(actual, proxy)
 
     def test_get_proxy_returns_empty_if_blacklisted(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
         actual = store.get_proxy(blacklist={proxy, })
@@ -76,7 +75,7 @@ class TestStores(unittest.TestCase):
     def test_get_proxy_returns_empty_if_filtered_and_blacklisted(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
         actual = store.get_proxy(filter_opts={'country': {'uk', }},
@@ -87,10 +86,10 @@ class TestStores(unittest.TestCase):
     def test_get_proxy_returns_empty_if_not_filtered_and_blacklisted(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
-        actual = store.get_proxy(filter_opts={'country': {'us', }},
+        actual = store.get_proxy(filter_opts={'code': {'us', }},
                                  blacklist={proxy, })
 
         self.assertIsNone(actual)
@@ -98,7 +97,7 @@ class TestStores(unittest.TestCase):
     def test_get_proxy_returns_proxy_if_any(self):
         store = Store()
         id = store.add_store()
-        expected = Proxy('host', 'source', 'us', True, 'version', 'source')
+        expected = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {expected, })
         actual = store.get_proxy()
@@ -108,7 +107,7 @@ class TestStores(unittest.TestCase):
     def test_remove_proxy_removes_from_set(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
         actual1 = store.get_proxy()
@@ -121,7 +120,7 @@ class TestStores(unittest.TestCase):
 
     def test_remove_proxy_invalid_id_does_nothing(self):
         store = Store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
         store.remove_proxy(1, proxy)
 
         proxy = store.get_proxy()
@@ -130,7 +129,7 @@ class TestStores(unittest.TestCase):
     def test_update_store_clears_if_none(self):
         store = Store()
         id = store.add_store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
         actual1 = store.get_proxy()
@@ -144,16 +143,16 @@ class TestStores(unittest.TestCase):
     def test_update_store_updates_proxies(self):
         store = Store()
         id = store.add_store()
-        expected = proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
         actual = store.get_proxy()
 
-        self.assertEqual(expected, actual)
+        self.assertEqual(proxy, actual)
 
     def test_update_store_invalid_id_does_nothing(self):
         store = Store()
-        proxy = Proxy('host', 'source', 'us', True, 'version', 'source')
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
         store.update_store(1, proxy)
 
         proxy = store.get_proxy()
