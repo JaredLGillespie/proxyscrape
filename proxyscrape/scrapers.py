@@ -282,7 +282,6 @@ RESOURCE_TYPE_MAP = {
         'us-proxy',
         'uk-proxy',
         'free-proxy-list',
-        'proxy-daily-http',
         'ssl-proxy',
         'anonymous-proxy'
     },
