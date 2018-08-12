@@ -63,7 +63,7 @@ def get_anonymous_proxies(url):
     proxies = set()
 
     for row in table.find('tbody').find_all('tr'):
-
+        data = list(map(lambda x: x.text, row.find_all('td')))
         host = data[0]
         port = data[1]
         country = data[3].lower()
