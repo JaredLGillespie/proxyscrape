@@ -62,13 +62,13 @@ def get_anonymous_proxies(url):
     table = soup.find('table', {'id': 'proxylisttable'})
     proxies = set()
 
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if rows[6].lower() == 'yes' else 'http'
+    for row in table.find('tbody').find_all('tr'):
+
+        host = data[0]
+        port = data[1]
+        country = data[3].lower()
+        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if data[6].lower() == 'yes' else 'http'
 
         proxies.add(Proxy(host, port, country, anonymous, version, 'anonymous-proxy'))
 
@@ -81,13 +81,13 @@ def get_free_proxy_list_proxies(url):
     table = soup.find('table', {'id': 'proxylisttable'})
     proxies = set()
 
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if rows[6].lower() == 'yes' else 'http'
+    for row in table.find('tbody').find_all('tr'):
+        data = list(map(lambda x: x.text, row.find_all('td')))
+        host = data[0]
+        port = data[1]
+        country = data[3].lower()
+        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if data[6].lower() == 'yes' else 'http'
 
         proxies.add(Proxy(host, port, country, anonymous, version, 'free-proxy-list'))
 
@@ -156,13 +156,13 @@ def get_socks_proxy_proxies(url):
     table = soup.find('table', {'id': 'proxylisttable'})
     proxies = set()
 
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        version = rows[4].lower()
-        anonymous = rows[5].lower() in ('anonymous', 'elite proxy')
+    for row in table.find('tbody').find_all('tr'):
+        data = list(map(lambda x: x.text, row.find_all('td')))
+        host = data[0]
+        port = data[1]
+        country = data[3].lower()
+        version = data[4].lower()
+        anonymous = data[5].lower() in ('anonymous', 'elite proxy')
 
         proxies.add(Proxy(host, port, country, anonymous, version, 'socks-proxy'))
 
@@ -175,12 +175,12 @@ def get_ssl_proxy_proxies(url):
     table = soup.find('table', {'id': 'proxylisttable'})
     proxies = set()
 
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
+    for row in table.find('tbody').find_all('tr'):
+        data = list(map(lambda x: x.text, row.find_all('td')))
+        host = data[0]
+        port = data[1]
+        country = data[3].lower()
+        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
 
         proxies.add(Proxy(host, port, country, anonymous, 'https', 'ssl-proxy'))
 
@@ -193,13 +193,13 @@ def get_uk_proxy_proxies(url):
     table = soup.find('table', {'id': 'proxylisttable'})
     proxies = set()
 
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if rows[6].lower() == 'yes' else 'http'
+    for row in table.find('tbody').find_all('tr'):
+        data = list(map(lambda x: x.text, row.find_all('td')))
+        host = data[0]
+        port = data[1]
+        country = data[3].lower()
+        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if data[6].lower() == 'yes' else 'http'
 
         proxies.add(Proxy(host, port, country, anonymous, version, 'uk-proxy'))
 
@@ -212,13 +212,13 @@ def get_us_proxy_proxies(url):
     table = soup.find('table', {'id': 'proxylisttable'})
     proxies = set()
 
-    for row in table.find_all('tr'):
-        rows = list(map(lambda x: x.text, row))
-        host = rows[0]
-        port = rows[1]
-        country = rows[3].lower()
-        anonymous = rows[4].lower() in ('anonymous', 'elite proxy')
-        version = 'https' if rows[6].lower() == 'yes' else 'http'
+    for row in table.find('tbody').find_all('tr'):
+        data = list(map(lambda x: x.text, row.find_all('td')))
+        host = data[0]
+        port = data[1]
+        country = data[3].lower()
+        anonymous = data[4].lower() in ('anonymous', 'elite proxy')
+        version = 'https' if data[6].lower() == 'yes' else 'http'
 
         proxies.add(Proxy(host, port, country, anonymous, version, 'us-proxy'))
 
