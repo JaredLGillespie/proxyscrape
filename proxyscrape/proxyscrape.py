@@ -90,12 +90,12 @@ def add_resource_type(name):
 
 def create_collector(name, resource_types, refresh_interval=3600, resources=None):
     if name in COLLECTORS:
-        raise CollectorAlreadyDefinedError(f'{name} already defined as a collector')
+        raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
 
     with _collector_lock:
         # Ensure not added by the time entered lock
         if name in COLLECTORS:
-            raise CollectorAlreadyDefinedError(f'{name} already defined as a collector')
+            raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
 
         collector = Collector(resource_types, refresh_interval, resources)
         COLLECTORS[name] = collector
