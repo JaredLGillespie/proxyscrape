@@ -26,9 +26,7 @@ __all__ = ['add_resource', 'add_resource_type', 'create_collector', 'get_collect
 
 from threading import Lock
 
-from .errors import CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError, \
-                    InvalidResourceAttributeError, InvalidResourceError, InvalidResourceTypeError, \
-                    ResourceAlreadyDefinedError
+from .errors import (CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError,
 from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
 from .stores import Store, FILTER_OPTIONS
 
@@ -54,16 +52,12 @@ def _is_iterable(obj):
         return False
 
 
-def add_resource(name, resource, resource_types):
-    if resource in RESOURCE_MAP:
-        raise ResourceAlreadyDefinedError(f'{resource} is already defined')
+def add_resource(name, resource_types, url, func):
+    if name in RESOURCE_MAP:
+        raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
     if not _is_iterable(resource_types):
         resource_types = {resource_types, }
-
-    for attr in {'url', 'func'}:
-        if attr not in resource:
-            raise InvalidResourceAttributeError(f'{attr} not defined for resource')
 
     for resource_type in resource_types:
         if resource_type not in RESOURCE_TYPE_MAP:
@@ -71,13 +65,14 @@ def add_resource(name, resource, resource_types):
 
     with _resource_lock:
         # Ensure not added by the time entered lock
-        if resource in RESOURCE_MAP:
-            raise ResourceAlreadyDefinedError(f'{resource} is already defined')
+        if name in RESOURCE_MAP:
+            raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
+        resource = {'url': url, 'func': func}
         RESOURCE_MAP[name] = resource
 
         for resource_type in resource_types:
-            RESOURCE_TYPE_MAP[resource_type] = resource
+            RESOURCE_TYPE_MAP[resource_type].add(name)
 
 
 def add_resource_type(name):
