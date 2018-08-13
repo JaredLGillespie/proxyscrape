@@ -27,6 +27,9 @@ __all__ = ['add_resource', 'add_resource_type', 'create_collector', 'get_collect
 from threading import Lock
 
 from .errors import (CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError,
+                     InvalidResourceError, InvalidResourceTypeError, ResourceAlreadyDefinedError,
+                     ResourceTypeAlreadyDefinedError)
+
 from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
 from .stores import Store, FILTER_OPTIONS
 
@@ -36,6 +39,7 @@ from .stores import Store, FILTER_OPTIONS
 
 # Module-level references to collectors
 COLLECTORS = {}
+
 _collector_lock = Lock()
 _resource_lock = Lock()
 _resource_type_lock = Lock()
