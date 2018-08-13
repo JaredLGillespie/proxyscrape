@@ -91,7 +91,7 @@ def add_resource_type(name):
         RESOURCE_TYPE_MAP[name] = set()
 
 
-def create_collector(name, resource_types, refresh_interval=3600, resources=None):
+def create_collector(name, resource_types=None, refresh_interval=3600, resources=None):
     if name in COLLECTORS:
         raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
 
@@ -124,15 +124,20 @@ class Collector:
     def __init__(self, resource_types, refresh_interval, resources):
         self._store = Store()
         self._blacklist = set()
-        self._resource_types = set(resource_types) if _is_iterable(resource_types) else {resource_types, }
+
+        if resource_types is not None:
+            self._resource_types = set(resource_types) if _is_iterable(resource_types) else {resource_types, }
+            self._validate_resource_types(self._resource_types)
+            self._filter_opts = {'type': self._resource_types.copy()}
+        else:
+            self._resource_types = None
+            self._filter_opts = {}
 
         # Input validations
-        self._validate_resource_types(self._resource_types)
-        resources = self._parse_resources(self._resource_types, resources)
+        resources = self._parse_resources(resource_types, resources)
         self._validate_resources(resources)
 
         self._resource_map = self._create_resource_map(resources, refresh_interval)
-        self._filter_opts = {'version': self._resource_types.copy()}
 
     def _create_resource_map(self, resources, refresh_interval):
         resource_map = dict()
@@ -164,6 +169,9 @@ class Collector:
     def _parse_resources(self, resource_types, resources):
         # Retrieve defaults if none specified
         if resources is None:
+            if resource_types is None:
+                raise InvalidResourceTypeError('No resource or resource type given')
+
             res = set()
             for resource_type in resource_types:
                 if resource_type in RESOURCE_TYPE_MAP:
@@ -195,9 +203,6 @@ class Collector:
                 raise InvalidFilterOptionError(f'{key} is an invalid filter option')
 
     def _validate_resource_types(self, resource_types):
-        if resource_types is None:
-            raise InvalidResourceTypeError(f'a resource type must be specified')
-
         if _is_iterable(resource_types):
             if set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
                 raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
@@ -225,7 +230,10 @@ class Collector:
         self._blacklist.clear()
 
     def clear_filter(self):
-        self._filter_opts = {'version': self._resource_types.copy()}
+        if self._resource_types:
+            self._filter_opts = {'type': self._resource_types.copy()}
+        else:
+            self._filter_opts = {}
 
     def get_proxy(self, filter_opts=None):
         self._validate_filter_opts(filter_opts)
