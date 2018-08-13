@@ -81,11 +81,15 @@ def add_resource(name, resource, resource_types):
 
 
 def add_resource_type(name):
-    if name not in RESOURCE_TYPE_MAP:
-        with _resource_type_lock:
-            # Ensure not added by the time entered lock
-            if name not in RESOURCE_TYPE_MAP:
-                RESOURCE_TYPE_MAP[name] = set()
+    if name in RESOURCE_TYPE_MAP:
+        raise ResourceTypeAlreadyDefinedError(f'{name} is already defined as a resource type')
+
+    with _resource_type_lock:
+        # Ensure not added by the time entered lock
+        if name in RESOURCE_TYPE_MAP:
+            raise ResourceTypeAlreadyDefinedError(f'{name} is already defined as a resource type')
+
+        RESOURCE_TYPE_MAP[name] = set()
 
 
 def create_collector(name, resource_types, refresh_interval=3600, resources=None):

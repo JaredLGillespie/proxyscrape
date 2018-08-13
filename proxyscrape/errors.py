@@ -41,10 +41,6 @@ class InvalidHTMLError(ProxyScrapeBaseException):
     """Invalid HTML Error."""
 
 
-class InvalidResourceAttributeError(ProxyScrapeBaseException):
-    """Invalid Resource Attribute Error."""
-
-
 class InvalidResourceError(ProxyScrapeBaseException):
     """Invalid Resource Error."""
 
@@ -59,3 +55,7 @@ class RequestNotOKError(ProxyScrapeBaseException):
 
 class ResourceAlreadyDefinedError(ProxyScrapeBaseException):
     """Collector Not Found Error."""
+
+
+class ResourceTypeAlreadyDefinedError(ProxyScrapeBaseException):
+    """Resource Type Already Defined Error."""
