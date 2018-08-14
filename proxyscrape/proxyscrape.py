@@ -30,7 +30,7 @@ from .errors import (CollectorAlreadyDefinedError, CollectorNotFoundError, Inval
                      InvalidResourceError, InvalidResourceTypeError, ResourceAlreadyDefinedError,
                      ResourceTypeAlreadyDefinedError)
 
-from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
+from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, Proxy, ProxyResource
 from .stores import Store, FILTER_OPTIONS
 
 
@@ -46,7 +46,7 @@ _resource_type_lock = Lock()
 
 
 def _is_iterable(obj):
-    if isinstance(obj, str):
+    if isinstance(obj, str) or isinstance(obj, Proxy):
         return False
 
     try:
