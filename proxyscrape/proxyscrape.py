@@ -238,7 +238,7 @@ class Collector:
         self._extend_filter(combined_filter_opts, filter_opts)
 
         self._refresh_resources(False)
-        return self._store.get_proxy(filter_opts, self._blacklist)
+        return self._store.get_proxy(combined_filter_opts, self._blacklist)
 
     def remove_proxy(self, proxies):
         if not _is_iterable(proxies):
