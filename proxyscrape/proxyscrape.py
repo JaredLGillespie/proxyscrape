@@ -170,7 +170,7 @@ class Collector:
         # Retrieve defaults if none specified
         if resources is None:
             if resource_types is None:
-                raise InvalidResourceTypeError('No resource or resource type given')
+                raise InvalidResourceError('No resource or resource type given')
 
             res = set()
             for resource_type in resource_types:
