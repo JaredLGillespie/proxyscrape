@@ -154,7 +154,7 @@ class Collector:
 
     def _extend_filter(self, existing_filter_opts, new_filter_opts):
         if not new_filter_opts:
-            return
+            return existing_filter_opts
 
         for key, value in new_filter_opts.items():
             if not _is_iterable(value):
