@@ -174,8 +174,7 @@ class Collector:
 
             res = set()
             for resource_type in resource_types:
-                if resource_type in RESOURCE_TYPE_MAP:
-                    res.update(RESOURCE_TYPE_MAP[resource_type])
+                res.update(RESOURCE_TYPE_MAP[resource_type])
             return res
 
         if _is_iterable(resources):
@@ -203,12 +202,8 @@ class Collector:
                 raise InvalidFilterOptionError(f'{key} is an invalid filter option')
 
     def _validate_resource_types(self, resource_types):
-        if _is_iterable(resource_types):
-            if set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
-                raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
-        else:
-            if resource_types not in RESOURCE_TYPE_MAP:
-                raise InvalidResourceTypeError(f'{resource_types} is an invalid resource type')
+        if set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
+            raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
 
     def _validate_resources(self, resources):
         for resource in resources:
