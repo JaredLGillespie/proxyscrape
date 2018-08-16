@@ -241,11 +241,17 @@ class Collector:
         return self._store.get_proxy(combined_filter_opts, self._blacklist)
 
     def remove_proxy(self, proxies):
+        if proxies is None:
+            return
+
         if not _is_iterable(proxies):
             proxies = {proxies, }
 
         for proxy in proxies:
             resource_type = proxy.source
+            if resource_type not in self._resource_map:
+                raise InvalidResourceTypeError(f'{resource_type} is not a valid resource type')
+
             id = self._resource_map[resource_type]['id']
             self._store.remove_proxy(id, proxy)
 
