@@ -134,7 +134,7 @@ class Collector:
             self._filter_opts = {}
 
         # Input validations
-        resources = self._parse_resources(resource_types, resources)
+        resources = self._parse_resources(self._resource_types, resources)
         self._validate_resources(resources)
 
         self._resource_map = self._create_resource_map(resources, refresh_interval)
