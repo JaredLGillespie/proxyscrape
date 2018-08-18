@@ -53,16 +53,17 @@ def _is_iterable(obj):
         return False
 
 
-def add_resource(name, resource_types, url, func):
+def add_resource(name, url, func, resource_types=None):
     if name in RESOURCE_MAP:
         raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
-    if not _is_iterable(resource_types):
-        resource_types = {resource_types, }
+    if resource_types is not None:
+        if not _is_iterable(resource_types):
+            resource_types = {resource_types, }
 
-    for resource_type in resource_types:
-        if resource_type not in RESOURCE_TYPE_MAP:
-            raise InvalidResourceTypeError(f'{resource_type} is not a defined resource type')
+        for resource_type in resource_types:
+            if resource_type not in RESOURCE_TYPE_MAP:
+                raise InvalidResourceTypeError(f'{resource_type} is not a defined resource type')
 
     with _resource_lock:
         # Ensure not added by the time entered lock
@@ -72,8 +73,9 @@ def add_resource(name, resource_types, url, func):
         resource = {'url': url, 'func': func}
         RESOURCE_MAP[name] = resource
 
-        for resource_type in resource_types:
-            RESOURCE_TYPE_MAP[resource_type].add(name)
+        if resource_types is not None:
+            for resource_type in resource_types:
+                RESOURCE_TYPE_MAP[resource_type].add(name)
 
 
 def add_resource_type(name):

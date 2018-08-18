@@ -51,14 +51,14 @@ class TestProxyScrape(unittest.TestCase):
         ps.RESOURCE_TYPE_MAP = {k: v.copy() for k, v in RESOURCE_TYPE_MAP_COPY.items()}
 
     def test_add_resource_exception_if_duplicate(self):
-        add_resource('my-resource', 'http', 'http://www.example.com', lambda url: set())
+        add_resource('my-resource', 'http://www.example.com', lambda url: set(), 'http')
 
         with self.assertRaises(ResourceAlreadyDefinedError):
-            add_resource('my-resource', 'http', 'http://www.example.com', lambda url: set())
+            add_resource('my-resource', 'http://www.example.com', lambda url: set(), 'http')
 
     def test_add_resource_exception_if_invalid_resource_type(self):
         with self.assertRaises(InvalidResourceTypeError):
-            add_resource('my-resource', 'invalid', 'http://www.example.com', lambda url: set())
+            add_resource('my-resource', 'http://www.example.com', lambda url: set(), 'invalid')
 
     def test_add_resource_exception_if_duplicate_lock_check(self):
         def func(): ps.RESOURCE_MAP['my-resource'] = {}
@@ -66,20 +66,24 @@ class TestProxyScrape(unittest.TestCase):
         t.start()
 
         with self.assertRaises(ResourceAlreadyDefinedError):
-            add_resource('my-resource', 'http', 'http://www.example.com', lambda url: set())
+            add_resource('my-resource', 'http://www.example.com', lambda url: set(), 'http')
 
     def test_add_resource_single_resource_type(self):
-        add_resource('my-resource', 'http', 'http://www.example.com', lambda url: set())
+        add_resource('my-resource', 'http://www.example.com', lambda url: set(), 'http')
 
         self.assertIn('my-resource', ps.RESOURCE_MAP)
         self.assertIn('my-resource', ps.RESOURCE_TYPE_MAP['http'])
 
     def test_add_resource_multiple_resource_types(self):
-        add_resource('my-resource', ['http', 'socks4'], 'http://www.example.com', lambda url: set())
+        add_resource('my-resource', 'http://www.example.com', lambda url: set(), ['http', 'socks4'])
 
         self.assertIn('my-resource', ps.RESOURCE_MAP)
         self.assertIn('my-resource', ps.RESOURCE_TYPE_MAP['http'])
         self.assertIn('my-resource', ps.RESOURCE_TYPE_MAP['socks4'])
+
+    def test_add_resource_none_resource_types(self):
+        add_resource('my-resource', 'http://www.example.com', lambda url: set(), None)
+        self.assertIn('my-resource', ps.RESOURCE_MAP)
 
     def test_add_resource_type_exception_if_duplicate(self):
         add_resource_type('my-resource-type')
@@ -134,7 +138,7 @@ class TestProxyScrape(unittest.TestCase):
 
     def test_get_resources_returns_correct(self):
         expected = set(ps.RESOURCE_MAP.keys()).union({'my-resource'})
-        add_resource('my-resource', 'http', 'http:///www.example.com', lambda url: set())
+        add_resource('my-resource', 'http:///www.example.com', lambda url: set(), 'http')
         actual = set(get_resources())
         self.assertSetEqual(expected, actual)
 
