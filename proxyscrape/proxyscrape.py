@@ -34,9 +34,6 @@ from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, Proxy, ProxyResource
 from .stores import Store, FILTER_OPTIONS
 
 
-# TODO: Ensure thread-safe locks around collector creation / retrieval
-# TODO: Ensure other thread-safe operations...
-
 # Module-level references to collectors
 COLLECTORS = {}
 
