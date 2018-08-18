@@ -440,5 +440,6 @@ class TestCollector(unittest.TestCase):
         for _, attrs in collector._resource_map.items():
             store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
+
 if __name__ == '__main__':
     unittest.main()
