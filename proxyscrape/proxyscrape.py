@@ -252,5 +252,5 @@ class Collector:
             id = self._resource_map[resource_type]['id']
             self._store.remove_proxy(id, proxy)
 
-    def refresh_proxies(self):
-        self._refresh_resources(True)
+    def refresh_proxies(self, force=True):
+        self._refresh_resources(force)

@@ -417,6 +417,28 @@ class TestCollector(unittest.TestCase):
         proxy_resource_mock.refresh.assert_called_with(True)
         store_mock.update_store.assert_not_called()
 
+    def test_refresh_proxies_with_no_force(self):
+        proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        proxies = {proxy, }
+
+        store_mock = Mock()
+        store_mock.return_value = store_mock  # Ensure same instance when initialized
+        store_mock.get_proxy.return_value = None
+
+        proxy_resource_mock = Mock()
+        proxy_resource_mock.return_value = proxy_resource_mock  # Ensure same instance when initialized
+        proxy_resource_mock.refresh.return_value = True, proxies
+
+        ps.Store = store_mock
+        ps.ProxyResource = proxy_resource_mock
+
+        collector = ps.Collector('http', 10, None)
+        collector.refresh_proxies(False)
+
+        proxy_resource_mock.refresh.assert_called_with(False)
+
+        for _, attrs in collector._resource_map.items():
+            store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
 if __name__ == '__main__':
     unittest.main()
