@@ -27,7 +27,6 @@ from bs4 import BeautifulSoup
 from collections import namedtuple
 from threading import Lock
 import requests
-import re
 import time
 
 from .errors import InvalidHTMLError, RequestNotOKError
@@ -114,20 +113,19 @@ def get_free_proxy_list_proxies(url):
         raise InvalidHTMLError()
 
 
-def _get_proxy_daily_proxies_parse_inner(text, type, source):
-    inner_reg = re.findall(r'''
-            ([0-9]{1,3}\. # Host Address
-            [0-9]{1,3}\.
-            [0-9]{1,3}\.
-            [0-9]{1,3}
-            :[0-9]{1,5}) # Port Number
-        ''', text, re.X | re.S)
+def _get_proxy_daily_proxies_parse_inner(element, type, source):
+    content = element.find('div').text
+    rows = content.replace('"', '').replace("'", '').split('\n')
 
-    if not inner_reg:
-        raise InvalidHTMLError()
+    proxies = set()
+    for row in rows:
+        row = row.strip()
+        if len(row) == 0:
+            continue
 
-    return {Proxy(*i.split(':'), None, None, None, type, source)
-            for i in inner_reg}
+        proxies.add(Proxy(*row.split(':'), None, None, None, type, source))
+    return proxies
+
 
 
 def get_proxy_daily_http_proxies(url):
@@ -135,16 +133,13 @@ def get_proxy_daily_http_proxies(url):
     if not response.ok:
         raise RequestNotOKError()
 
-    outer_reg = re.findall(r'''
-        Free\sHttp/Https\sProxy\sList 
-        .*
-        Free\sSocks4\sProxy\sList
-    ''', response.text, re.X | re.S)
-
-    if not outer_reg:
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        content = soup.find('div', {'id': 'free-proxy-list'})
+        centers = content.find_all('center')
+        return _get_proxy_daily_proxies_parse_inner(centers[0], 'http', 'proxy-daily-http')
+    except (AttributeError, KeyError):
         raise InvalidHTMLError()
-
-    return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'http', 'proxy-daily-http')
 
 
 def get_proxy_daily_socks4_proxies(url):
@@ -152,16 +147,13 @@ def get_proxy_daily_socks4_proxies(url):
     if not response.ok:
         raise RequestNotOKError()
 
-    outer_reg = re.findall(r'''
-         Free\sSocks4\sProxy\sList
-        .*
-        Free\sSocks5\sProxy\sList
-    ''', response.text, re.X | re.S)
-
-    if not outer_reg:
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        content = soup.find('div', {'id': 'free-proxy-list'})
+        centers = content.find_all('center')
+        return _get_proxy_daily_proxies_parse_inner(centers[1], 'socks4', 'proxy-daily-socks4')
+    except (AttributeError, KeyError):
         raise InvalidHTMLError()
-
-    return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks4', 'proxy-daily-socks4')
 
 
 def get_proxy_daily_socks5_proxies(url):
@@ -169,15 +161,13 @@ def get_proxy_daily_socks5_proxies(url):
     if not response.ok:
         raise RequestNotOKError()
 
-    outer_reg = re.findall(r'''
-         Free\sSocks5\sProxy\sList
-        .*
-    ''', response.text, re.X | re.S)
-
-    if not outer_reg:
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        content = soup.find('div', {'id': 'free-proxy-list'})
+        centers = content.find_all('center')
+        return _get_proxy_daily_proxies_parse_inner(centers[2], 'socks5', 'proxy-daily-socks5')
+    except (AttributeError, KeyError):
         raise InvalidHTMLError()
-
-    return _get_proxy_daily_proxies_parse_inner(outer_reg[0], 'socks5', 'proxy-daily-socks5')
 
 
 def get_socks_proxies(url):

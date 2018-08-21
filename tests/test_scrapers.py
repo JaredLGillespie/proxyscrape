@@ -219,7 +219,7 @@ class TestScrapers(unittest.TestCase):
     def test_proxy_daily_http_proxies_success(self):
         with open(os.path.join(cwd, 'mock_pages', 'proxy-daily-proxy.html'), 'r') as html:
             response = Mock()
-            response.text = ''.join(html.readlines())
+            response.content = html
             response.ok = True
             self.requests.get = lambda url: response
 
@@ -253,22 +253,7 @@ class TestScrapers(unittest.TestCase):
     def test_proxy_daily_http_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
-            response.text = ''.join(html.readlines())
-            response.ok = True
-            self.requests.get = lambda url: response
-
-            rm = RESOURCE_MAP['proxy-daily-http']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
-
-            refreshed, proxies = pr.refresh()
-
-            self.assertEqual(False, refreshed)
-            self.assertIsNone(proxies)
-
-    def test_proxy_daily_http_proxies_invalid_inner_html(self):
-        with open(os.path.join(cwd, 'mock_pages', 'proxy-daily-proxy-missing-addresses.html'), 'r') as html:
-            response = Mock()
-            response.text = ''.join(html.readlines())
+            response.content = html
             response.ok = True
             self.requests.get = lambda url: response
 
@@ -283,7 +268,7 @@ class TestScrapers(unittest.TestCase):
     def test_proxy_daily_socks4_proxies_success(self):
         with open(os.path.join(cwd, 'mock_pages', 'proxy-daily-proxy.html'), 'r') as html:
             response = Mock()
-            response.text = ''.join(html.readlines())
+            response.content = html
             response.ok = True
             self.requests.get = lambda url: response
 
@@ -317,22 +302,7 @@ class TestScrapers(unittest.TestCase):
     def test_proxy_daily_socks4_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
-            response.text = ''.join(html.readlines())
-            response.ok = True
-            self.requests.get = lambda url: response
-
-            rm = RESOURCE_MAP['proxy-daily-socks4']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
-
-            refreshed, proxies = pr.refresh()
-
-            self.assertEqual(False, refreshed)
-            self.assertIsNone(proxies)
-
-    def test_proxy_daily_socks4_proxies_invalid_inner_html(self):
-        with open(os.path.join(cwd, 'mock_pages', 'proxy-daily-proxy-missing-addresses.html'), 'r') as html:
-            response = Mock()
-            response.text = ''.join(html.readlines())
+            response.content = html
             response.ok = True
             self.requests.get = lambda url: response
 
@@ -347,7 +317,7 @@ class TestScrapers(unittest.TestCase):
     def test_proxy_daily_socks5_proxies_success(self):
         with open(os.path.join(cwd, 'mock_pages', 'proxy-daily-proxy.html'), 'r') as html:
             response = Mock()
-            response.text = ''.join(html.readlines())
+            response.content = html
             response.ok = True
             self.requests.get = lambda url: response
 
@@ -381,22 +351,7 @@ class TestScrapers(unittest.TestCase):
     def test_proxy_daily_socks5_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
-            response.text = ''.join(html.readlines())
-            response.ok = True
-            self.requests.get = lambda url: response
-
-            rm = RESOURCE_MAP['proxy-daily-socks5']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
-
-            refreshed, proxies = pr.refresh()
-
-            self.assertEqual(False, refreshed)
-            self.assertIsNone(proxies)
-
-    def test_proxy_daily_socks5_proxies_invalid_inner_html(self):
-        with open(os.path.join(cwd, 'mock_pages', 'proxy-daily-proxy-missing-addresses.html'), 'r') as html:
-            response = Mock()
-            response.text = ''.join(html.readlines())
+            response.content = html
             response.ok = True
             self.requests.get = lambda url: response
 
