@@ -53,19 +53,16 @@ def _is_iterable(obj):
         return False
 
 
-def add_resource(name, url, func, resource_types=None):
+def add_resource(name, func, resource_types=None):
     """Adds a new resource, which is representative of a function that scrapes a particular set of proxies.
 
     :param name:
         An identifier for the resource.
-    :param url:
-        The web page to scrape (is passed to the 'func').
     :param func:
         The scraping function.
     :param resource_types:
         (optional) The resource types to add the resource to. Can either be a single or sequence of resource types.
     :type name: string
-    :type url: string
     :type func: function
     :type resource_types: iterable or string or None
     :raises InvalidResourceTypeError:
@@ -89,8 +86,7 @@ def add_resource(name, url, func, resource_types=None):
         if name in RESOURCE_MAP:
             raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
-        resource = {'url': url, 'func': func}
-        RESOURCE_MAP[name] = resource
+        RESOURCE_MAP[name] = func
 
         if resource_types is not None:
             for resource_type in resource_types:
@@ -242,10 +238,9 @@ class Collector:
         resource_map = dict()
         for resource in resources:
             id = self._store.add_store()
-            url = RESOURCE_MAP[resource]['url']
-            func = RESOURCE_MAP[resource]['func']
+            func = RESOURCE_MAP[resource]
             resource_map[resource] = {
-                'proxy-resource': ProxyResource(url, func, refresh_interval),
+                'proxy-resource': ProxyResource(func, refresh_interval),
                 'id': id
             }
 

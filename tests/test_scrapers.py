@@ -32,12 +32,12 @@ class TestProxyResource(unittest.TestCase):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
         call_count = 0
 
-        def func(url):
+        def func():
             nonlocal call_count
             call_count += 1
             return expected
 
-        pr = ProxyResource('http://www.example.com', func, -1)
+        pr = ProxyResource(func, -1)
 
         refreshed, actual = pr.refresh()
         self.assertEqual(True, refreshed)
@@ -51,12 +51,12 @@ class TestProxyResource(unittest.TestCase):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
         call_count = 0
 
-        def func(url):
+        def func():
             nonlocal call_count
             call_count += 1
             return expected
 
-        pr = ProxyResource('http://www.example.com', func, 5)
+        pr = ProxyResource(func, 5)
 
         refreshed, actual = pr.refresh()
         self.assertEqual(True, refreshed)
@@ -70,12 +70,12 @@ class TestProxyResource(unittest.TestCase):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
         call_count = 0
 
-        def func(url):
+        def func():
             nonlocal call_count
             call_count += 1
             return expected
 
-        pr = ProxyResource('http://www.example.com', func, 5)
+        pr = ProxyResource(func, 5)
 
         refreshed, actual = pr.refresh()
         self.assertEqual(True, refreshed)
@@ -89,12 +89,12 @@ class TestProxyResource(unittest.TestCase):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
         call_count = 0
 
-        def func(url):
+        def func():
             nonlocal call_count
             call_count += 1
             return expected
 
-        pr = ProxyResource('http://www.example.com', func, 5)
+        pr = ProxyResource(func, 5)
 
         refreshed, actual = pr.refresh()
         self.assertEqual(True, refreshed)
@@ -131,8 +131,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('217.172.244.7', '8080', 'ru', 'russian federation', True, 'http', 'anonymous-proxy')
             }
 
-            rm = RESOURCE_MAP['anonymous-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['anonymous-proxy']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -144,8 +144,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['anonymous-proxy']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['anonymous-proxy']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -159,8 +159,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['anonymous-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['anonymous-proxy']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -180,8 +180,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('217.172.244.7', '8080', 'ru', 'russian federation', True, 'http', 'free-proxy-list')
             }
 
-            rm = RESOURCE_MAP['free-proxy-list']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['free-proxy-list']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -193,8 +193,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['free-proxy-list']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['free-proxy-list']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -208,8 +208,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['free-proxy-list']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['free-proxy-list']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -229,8 +229,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('88.255.101.177', '53281', None, None, None, 'http', 'proxy-daily-http')
             }
 
-            rm = RESOURCE_MAP['proxy-daily-http']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['proxy-daily-http']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -242,8 +242,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['proxy-daily-http']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['proxy-daily-http']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -257,8 +257,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['proxy-daily-http']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['proxy-daily-http']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -278,8 +278,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('41.79.237.135', '1080', None, None, None, 'socks4', 'proxy-daily-socks4')
             }
 
-            rm = RESOURCE_MAP['proxy-daily-socks4']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['proxy-daily-socks4']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -291,8 +291,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['proxy-daily-socks4']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['proxy-daily-socks4']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -306,8 +306,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['proxy-daily-socks4']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['proxy-daily-socks4']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -327,8 +327,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('150.129.151.44', '6667', None, None, None, 'socks5', 'proxy-daily-socks5')
             }
 
-            rm = RESOURCE_MAP['proxy-daily-socks5']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['proxy-daily-socks5']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -340,8 +340,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['proxy-daily-socks5']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['proxy-daily-socks5']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -355,8 +355,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['proxy-daily-socks5']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['proxy-daily-socks5']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -376,8 +376,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('217.172.244.7', '8080', 'ru', 'russian federation', True, 'socks4', 'socks-proxy')
             }
 
-            rm = RESOURCE_MAP['socks-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['socks-proxy']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -389,8 +389,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['socks-proxy']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['socks-proxy']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -404,8 +404,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['socks-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['socks-proxy']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -425,8 +425,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('217.172.244.7', '8080', 'ru', 'russian federation', False, 'https', 'ssl-proxy')
             }
 
-            rm = RESOURCE_MAP['ssl-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['ssl-proxy']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -438,8 +438,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['ssl-proxy']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['ssl-proxy']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -453,8 +453,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['ssl-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['ssl-proxy']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -474,8 +474,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('217.172.244.7', '8080', 'uk', 'united kingdom', False, 'http', 'uk-proxy')
             }
 
-            rm = RESOURCE_MAP['uk-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['uk-proxy']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -487,8 +487,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['uk-proxy']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['uk-proxy']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -502,8 +502,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['uk-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['uk-proxy']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -523,8 +523,8 @@ class TestScrapers(unittest.TestCase):
                 Proxy('217.172.244.7', '8080', 'us', 'united states', False, 'http', 'us-proxy')
             }
 
-            rm = RESOURCE_MAP['us-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['us-proxy']
+            pr = ProxyResource(func, 10)
 
             _, proxies = pr.refresh()
 
@@ -536,8 +536,8 @@ class TestScrapers(unittest.TestCase):
         response.ok = False
         self.requests.get = lambda url: response
 
-        rm = RESOURCE_MAP['us-proxy']
-        pr = ProxyResource(rm['url'], rm['func'], 10)
+        func = RESOURCE_MAP['us-proxy']
+        pr = ProxyResource(func, 10)
 
         refreshed, proxies = pr.refresh()
 
@@ -551,8 +551,8 @@ class TestScrapers(unittest.TestCase):
             response.ok = True
             self.requests.get = lambda url: response
 
-            rm = RESOURCE_MAP['us-proxy']
-            pr = ProxyResource(rm['url'], rm['func'], 10)
+            func = RESOURCE_MAP['us-proxy']
+            pr = ProxyResource(func, 10)
 
             refreshed, proxies = pr.refresh()
 
@@ -568,8 +568,8 @@ class TestScrapers(unittest.TestCase):
 #             Proxy('217.172.244.7', '8080', 'ru', 'russian federation', True, 'http', 'anonymous-proxy')
 #         }
 #
-#         rm = RESOURCE_MAP['anonymous-proxy']
-#         pr = ProxyResource(rm['url'], rm['func'], 10)
+#         func = RESOURCE_MAP['anonymous-proxy']
+#         pr = ProxyResource(func, 10)
 #
 #         _, proxies = pr.refresh()
 #

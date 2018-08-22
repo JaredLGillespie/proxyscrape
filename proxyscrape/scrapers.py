@@ -38,8 +38,6 @@ Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'ty
 class ProxyResource:
     """A manager for a single proxy resource.
 
-    :param url:
-        The url of the web-page to scrape.
     :param func:
         The scraping function.
     :param refresh_interval:
@@ -48,8 +46,7 @@ class ProxyResource:
     :type func: function
     :type refresh_interval: int
     """
-    def __init__(self, url, func, refresh_interval):
-        self._url = url
+    def __init__(self, func, refresh_interval):
         self._func = func
         self._refresh_interval = refresh_interval
         self._lock = Lock()
@@ -75,7 +72,7 @@ class ProxyResource:
             if force or self._last_refresh_time + self._refresh_interval <= time.time():
 
                 try:
-                    proxies = self._func(self._url)
+                    proxies = self._func()
                     self._last_refresh_time = time.time()
                     return True, proxies
                 except (InvalidHTMLError, RequestNotOKError):
@@ -84,7 +81,8 @@ class ProxyResource:
         return False, None
 
 
-def get_anonymous_proxies(url):
+def get_anonymous_proxies():
+    url = 'https://free-proxy-list.net/anonymous-proxy.html'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -110,7 +108,8 @@ def get_anonymous_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_free_proxy_list_proxies(url):
+def get_free_proxy_list_proxies():
+    url = 'http://www.free-proxy-list.net'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -150,7 +149,8 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
     return proxies
 
 
-def get_proxy_daily_http_proxies(url):
+def get_proxy_daily_http_proxies():
+    url = 'http://www.proxy-daily.com'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -164,7 +164,8 @@ def get_proxy_daily_http_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_proxy_daily_socks4_proxies(url):
+def get_proxy_daily_socks4_proxies():
+    url = 'http://www.proxy-daily.com'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -178,7 +179,8 @@ def get_proxy_daily_socks4_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_proxy_daily_socks5_proxies(url):
+def get_proxy_daily_socks5_proxies():
+    url = 'http://www.proxy-daily.com'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -192,7 +194,8 @@ def get_proxy_daily_socks5_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_socks_proxies(url):
+def get_socks_proxies():
+    url = 'https://www.socks-proxy.net'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -218,7 +221,8 @@ def get_socks_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_ssl_proxies(url):
+def get_ssl_proxies():
+    url = 'https://www.sslproxies.org/'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -243,7 +247,8 @@ def get_ssl_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_uk_proxies(url):
+def get_uk_proxies():
+    url = 'https://free-proxy-list.net/uk-proxy.html'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -269,7 +274,8 @@ def get_uk_proxies(url):
         raise InvalidHTMLError()
 
 
-def get_us_proxies(url):
+def get_us_proxies():
+    url = 'https://www.us-proxy.org'
     response = requests.get(url)
     if not response.ok:
         raise RequestNotOKError()
@@ -296,42 +302,15 @@ def get_us_proxies(url):
 
 
 RESOURCE_MAP = {
-    'anonymous-proxy': {
-        'url': 'https://free-proxy-list.net/anonymous-proxy.html',
-        'func': get_anonymous_proxies
-    },
-    'free-proxy-list': {
-        'url': 'http://www.free-proxy-list.net',
-        'func': get_free_proxy_list_proxies
-    },
-    'proxy-daily-http': {
-        'url': 'http://www.proxy-daily.com',
-        'func': get_proxy_daily_http_proxies
-    },
-    'proxy-daily-socks4': {
-        'url': 'http://www.proxy-daily.com',
-        'func': get_proxy_daily_socks4_proxies
-    },
-    'proxy-daily-socks5': {
-        'url': 'http://www.proxy-daily.com',
-        'func': get_proxy_daily_socks5_proxies
-    },
-    'socks-proxy': {
-        'url': 'https://www.socks-proxy.net',
-        'func': get_socks_proxies
-    },
-    'ssl-proxy': {
-        'url': 'https://www.sslproxies.org/',
-        'func': get_ssl_proxies
-    },
-    'uk-proxy': {
-        'url': 'https://free-proxy-list.net/uk-proxy.html',
-        'func': get_uk_proxies
-    },
-    'us-proxy': {
-        'url': 'https://www.us-proxy.org',
-        'func': get_us_proxies,
-    }
+    'anonymous-proxy': get_anonymous_proxies,
+    'free-proxy-list': get_free_proxy_list_proxies,
+    'proxy-daily-http': get_proxy_daily_http_proxies,
+    'proxy-daily-socks4': get_proxy_daily_socks4_proxies,
+    'proxy-daily-socks5': get_proxy_daily_socks5_proxies,
+    'socks-proxy': get_socks_proxies,
+    'ssl-proxy': get_ssl_proxies,
+    'uk-proxy': get_uk_proxies,
+    'us-proxy': get_us_proxies
 }
 
 RESOURCE_TYPE_MAP = {
