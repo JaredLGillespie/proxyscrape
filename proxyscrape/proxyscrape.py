@@ -54,6 +54,25 @@ def _is_iterable(obj):
 
 
 def add_resource(name, url, func, resource_types=None):
+    """Adds a new resource, which is representative of a function that scrapes a particular set of proxies.
+
+    :param name:
+        An identifier for the resource.
+    :param url:
+        The web page to scrape (is passed to the 'func').
+    :param func:
+        The scraping function.
+    :param resource_types:
+        (optional) The resource types to add the resource to. Can either be a single or sequence of resource types.
+    :type name: string
+    :type url: string
+    :type func: function
+    :type resource_types: iterable or string or None
+    :raises InvalidResourceTypeError:
+        If 'resource_types' is defined are does not represent defined resource types.
+    :raises ResourceAlreadyDefinedError:
+        If 'name' is already a defined resource.
+    """
     if name in RESOURCE_MAP:
         raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
@@ -79,6 +98,14 @@ def add_resource(name, url, func, resource_types=None):
 
 
 def add_resource_type(name):
+    """Adds a new resource type, which is a representative of a group of resources.
+
+    :param name:
+        An identifier for the resource type.
+    :type name: string
+    :raises ResourceTypeAlreadyDefinedError:
+        If 'name' is already a defined resource type.
+    """
     if name in RESOURCE_TYPE_MAP:
         raise ResourceTypeAlreadyDefinedError(f'{name} is already defined as a resource type')
 
@@ -91,6 +118,36 @@ def add_resource_type(name):
 
 
 def create_collector(name, resource_types=None, refresh_interval=3600, resources=None):
+    """Creates a new collector to scrape and retrieve proxies.
+
+    Collectors are stored at the module level. A collector should be creates at the start of the application, and can be
+    retrieved later on via `proxyscrape.get_collector(...)`
+
+    :param name:
+        An identifier for the collector.
+    :param resource_types:
+        (optional) The resource types to to scrape. Can either be a single or sequence of resource types. Either
+        `resource_types` or `resources` should be defined (but not necessarily both).
+    :param refresh_interval:
+        The amount of time (in seconds) between refreshing the resources. Resources are stored in memory until they are
+        refreshed, at which they are flushed and retrieved again.
+    :param resources:
+        (optional) The resources to scrape. Can either be a single or sequence of resources. Either `resource_types` or
+        `resources` should be defined (but not necessarily both).
+    :type name: string
+    :type resource_types: iterable or string or None
+    :type refresh_interval: int
+    :type resources: iterable or string or None
+    :return:
+        The initialized collector.
+    :rtype: Collector
+    :raises CollectorAlreadyDefinedError:
+        If `name` is already a defined collector.
+    :raises InvalidResourceError:
+        If 'resources' is not a valid resource.
+    :raises InvalidResourceTypeError:
+        If 'resource_type' is not a valid resource type.
+    """
     if name in COLLECTORS:
         raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
 
@@ -105,6 +162,17 @@ def create_collector(name, resource_types=None, refresh_interval=3600, resources
 
 
 def get_collector(name):
+    """Retrieves a defined collector.
+
+    :param name:
+        An identifier for the collector.
+    :type name: string
+    :return:
+        The collector.
+    :rtype: Collector
+    :raises CollectorNotFoundError:
+        If `name` is not a defined collector.
+    """
     if name in COLLECTORS:
         return COLLECTORS[name]
 
@@ -112,14 +180,46 @@ def get_collector(name):
 
 
 def get_resource_types():
-    return RESOURCE_TYPE_MAP.keys()
+    """Returns a set of the resource types.
+
+    :return:
+        The defined resource types.
+    :rtype: set
+    """
+    return set(RESOURCE_TYPE_MAP.keys())
 
 
 def get_resources():
-    return RESOURCE_MAP.keys()
+    """Returns a set of the resources.
+
+    :return:
+        The defined resources.
+    :rtype: set
+    """
+    return set(RESOURCE_MAP.keys())
 
 
 class Collector:
+    """A proxy collector for retrieving proxies.
+
+
+    :param resource_types:
+        (optional) The resource types to to scrape. Can either be a single or sequence of resource types. Either
+        `resource_types` or `resources` should be defined (but not necessarily both).
+    :param refresh_interval:
+        The amount of time (in seconds) between refreshing the resources. Resources are stored in memory until they are
+        refreshed, at which they are flushed and retrieved again.
+    :param resources:
+        (optional) The resources to scrape. Can either be a single or sequence of resources. Either `resource_types` or
+        `resources` should be defined (but not necessarily both).
+    :type resource_types: iterable or string or None
+    :type refresh_interval: int
+    :type resources: iterable or string or None
+    :raises InvalidResourceError:
+        If 'resources' is not a valid resource.
+    :raises InvalidResourceTypeError:
+        If 'resource_type' is not a valid resource type.
+    """
     def __init__(self, resource_types, refresh_interval, resources):
         self._store = Store()
         self._blacklist = set()
@@ -210,10 +310,46 @@ class Collector:
                 raise InvalidResourceError(f'{resource} is an invalid resource')
 
     def apply_filter(self, filter_opts):
+        """Applies a filter to the collector for retrieving proxies matching specific criteria.
+
+        A filter should defined properties of a proxy that must match for it to be retrievable. Valid properties are:
+            - code  (us, ca, ...)
+            - country  (united states, canada, ...)
+            - anonymous  (True, False)
+            - type  (http, https, socks4, socks5, ...)
+
+        Filter_opts should be a dictionary with keys being a valid filter option
+        and values either a single string or a collections of strings.
+
+        Filters applied are additive; calling this function multiple times with different filters adds them as a single
+        large filter.
+
+        ex. filter_opts = {
+            'code': 'us'
+        }
+
+        ex. filter_opts = {
+            'code': ['us', 'uk']
+        }
+
+        :param filter_opts:
+            Options to filter proxies retrieved by the collector.
+        :type filter_opts: dict
+        :raises InvalidFilterOptionError:
+            If `filter_opts` is not a dictionary or defines an invalid filter.
+        """
         self._validate_filter_opts(filter_opts)
         self._extend_filter(self._filter_opts, filter_opts)
 
     def blacklist_proxy(self, proxies):
+        """Blacklists a specific a proxy from being retrieved.
+
+        Blacklitse
+
+        :param proxies:
+            A single or sequence of proxies to blacklist.
+        :type proxies: Proxy or iterable
+        """
         if not _is_iterable(proxies):
             proxies = {proxies, }
         proxies = set(proxies)
@@ -221,15 +357,33 @@ class Collector:
         self._blacklist.update(proxies)
 
     def clear_blacklist(self):
+        """Clears the blacklist."""
         self._blacklist.clear()
 
     def clear_filter(self):
+        """Clears the filter."""
         if self._resource_types:
             self._filter_opts = {'type': self._resource_types.copy()}
         else:
             self._filter_opts = {}
 
     def get_proxy(self, filter_opts=None):
+        """Retrieves a single proxy.
+
+        A single proxy is retrieved from the internal store. If `refreshed` is True and proxies haven't been retrieved
+        within the collector's `refresh_interval`, they are refreshed by clearing the internal store and retrieving new
+        proxies.
+
+        :param filter_opts:
+            (optional) Options to filter proxies retrieved by collector.
+        :type filter_opts: dict or None
+        :return:
+            The retrieved proxy or None if no proxy found (either because none exist in internal store or filter_opts
+            none matched filter_opts).
+        :rtype: Proxy or None
+        :raises InvalidFilterOptionError:
+            If `filter_opts` is not a dictionary or defines an invalid filter.
+        """
         self._validate_filter_opts(filter_opts)
 
         combined_filter_opts = dict()
@@ -240,6 +394,18 @@ class Collector:
         return self._store.get_proxy(combined_filter_opts, self._blacklist)
 
     def remove_proxy(self, proxies):
+        """Removes a proxy from the internal store.
+
+        This is different from blacklisting as the blacklist will prevent a proxy from ever being retrieved, while this
+        function simply removes it from the internal store. The proxy can still be added back to the internal store if
+        it is retrieved via refresh.
+
+        :param proxies:
+            A single or sequence of proxies to remove from the internal store.
+        :type proxies: Proxy or iterable
+        :raises InvalidResourceTypeError:
+            If any of the proxies specified have an invalid source (i.e. resource type).
+        """
         if proxies is None:
             return
 
@@ -255,4 +421,14 @@ class Collector:
             self._store.remove_proxy(id, proxy)
 
     def refresh_proxies(self, force=True):
+        """Refreshes the proxies.
+
+        This is used to refresh the proxies without retrieving one from the internal store. Defaults to forcing a
+        refresh regardless of the last refresh performed.
+
+        :param force:
+            Whether to force a refresh. If True, a refresh is always performed; otherwise it is only done if a refresh
+            hasn't occurred within the collector's `refresh_interval`. Defaults to True.
+        :type force: bool
+        """
         self._refresh_resources(force)

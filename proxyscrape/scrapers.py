@@ -36,6 +36,18 @@ Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'ty
 
 
 class ProxyResource:
+    """A manager for a single proxy resource.
+
+    :param url:
+        The url of the web-page to scrape.
+    :param func:
+        The scraping function.
+    :param refresh_interval:
+        The minimum time (in seconds) between each refresh.
+    :type url: string
+    :type func: function
+    :type refresh_interval: int
+    """
     def __init__(self, url, func, refresh_interval):
         self._url = url
         self._func = func
@@ -44,6 +56,17 @@ class ProxyResource:
         self._last_refresh_time = 0
 
     def refresh(self, force=False):
+        """Refreshes proxies.
+
+        Proxies are refreshed if they haven't been refreshed within the past `refresh_interval`, or if `force` is True.
+
+      :param force:
+            Whether to force a refresh. If True, a refresh is always performed; otherwise it is only done if a refresh
+            hasn't occurred within the collector's `refresh_interval`. Defaults to False.
+        :return:
+            A tuple denoting whether proxies were refreshed and the proxies retrieved.
+        :rtype: (bool, iterable)
+        """
         if not force and self._last_refresh_time + self._refresh_interval > time.time():
             return False, None
 
@@ -125,7 +148,6 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
 
         proxies.add(Proxy(*row.split(':'), None, None, None, type, source))
     return proxies
-
 
 
 def get_proxy_daily_http_proxies(url):

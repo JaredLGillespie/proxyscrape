@@ -34,6 +34,10 @@ FILTER_OPTIONS = {
 
 
 class Store:
+    """An internal store for retrieved proxies.
+
+    Each `ProxyResource` is mapped to an internal 'store' within this class.
+    """
     def __init__(self):
         # Maps a uuid to a store
         self._stores = {}
@@ -59,11 +63,27 @@ class Store:
         return filter(filter_func, proxies)
 
     def add_store(self):
+        """Adds a new internal store for use by a single `ProxyResource`.
+
+        :return:
+            The unique identifier assigned to the store.
+        :rtype: uuid
+        """
         id = uuid.uuid4()
         self._stores[id] = set()
         return id
 
     def get_proxy(self, filter_opts=None, blacklist=None):
+        """Retrieves a single proxy.
+
+        :param filter_opts:
+            (optional) Options to filter the proxies by.
+        :param blacklist:
+            (optional) Specific proxies to not retrieve.
+        :return:
+            A single proxy matching the given filters.
+        :rtype: Proxy or None
+        """
         proxies = set()
         for store in self._stores.values():
             proxies.update(store)
@@ -81,12 +101,32 @@ class Store:
         return random.sample(filtered_proxies, 1)[0]
 
     def remove_proxy(self, id, proxy):
+        """Removes a proxy from the internal store.
+
+        :param id:
+            The unique identifier of the store.
+        :param proxy:
+            The proxy to remove.
+        :type id: uuid
+        :type proxy: Proxy
+        """
         if id not in self._stores:
             return
 
         self._stores[id].difference_update({proxy, })
 
     def update_store(self, id, proxies):
+        """Updates the store with the given proxies.
+
+        This clears the store of pre-existing proxies and adds the new ones.
+
+        :param id:
+            The unique identifier of the store.
+        :param proxies:
+            The proxies to add to the store.
+        :type id: uuid
+        :type proxies: set
+        """
         if id not in self._stores:
             return
 
