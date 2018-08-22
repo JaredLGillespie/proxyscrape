@@ -93,12 +93,17 @@ def add_resource(name, func, resource_types=None):
                 RESOURCE_TYPE_MAP[resource_type].add(name)
 
 
-def add_resource_type(name):
+def add_resource_type(name, resources=None):
     """Adds a new resource type, which is a representative of a group of resources.
 
     :param name:
         An identifier for the resource type.
+    :param resources:
+        (optional) The resources to add to the resource type. Can either be a single or sequence of resources.
     :type name: string
+    :type resources: string or iterable
+    :raises InvalidResourceError:
+        If any of the resources are invalid.
     :raises ResourceTypeAlreadyDefinedError:
         If 'name' is already a defined resource type.
     """
@@ -110,7 +115,18 @@ def add_resource_type(name):
         if name in RESOURCE_TYPE_MAP:
             raise ResourceTypeAlreadyDefinedError(f'{name} is already defined as a resource type')
 
-        RESOURCE_TYPE_MAP[name] = set()
+        if resources is not None:
+            if not _is_iterable(resources):
+                resources = {resources, }
+            resources = set(resources)
+
+            for resource in resources:
+                if resource not in RESOURCE_MAP:
+                    raise InvalidResourceError(f'{resource} is an invalid resource')
+        else:
+            resources = set()
+
+        RESOURCE_TYPE_MAP[name] = resources
 
 
 def create_collector(name, resource_types=None, refresh_interval=3600, resources=None):

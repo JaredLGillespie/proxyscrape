@@ -101,6 +101,21 @@ class TestProxyScrape(unittest.TestCase):
 
     def test_add_resource_type_adds_if_new(self):
         add_resource_type('my-resource-type')
+        self.assertIn('my-resource-type', ps.RESOURCE_TYPE_MAP)
+
+    def test_add_resource_single_resource(self):
+        add_resource_type('my-resource-type', 'us-proxy')
+        self.assertIn('my-resource-type', ps.RESOURCE_TYPE_MAP)
+        self.assertSetEqual({'us-proxy'}, ps.RESOURCE_TYPE_MAP['my-resource-type'])
+
+    def test_add_resource_type_multiple_resources(self):
+        add_resource_type('my-resource-type', ('us-proxy', 'uk-proxy'))
+        self.assertIn('my-resource-type', ps.RESOURCE_TYPE_MAP)
+        self.assertSetEqual({'us-proxy', 'uk-proxy'}, ps.RESOURCE_TYPE_MAP['my-resource-type'])
+
+    def test_add_resource_type_exception_if_invalid_resource(self):
+        with self.assertRaises(InvalidResourceError):
+            add_resource_type('my-resource-type', 'my-resource')
 
     def test_create_collector_exception_if_duplicate(self):
         create_collector('my-collector', 'http')
