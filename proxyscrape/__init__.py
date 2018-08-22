@@ -50,3 +50,5 @@ from proxyscrape.proxyscrape import (
     get_resource_types,
     get_resources
 )
+
+from proxyscrape.scrapers import Proxy
