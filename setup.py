@@ -32,7 +32,7 @@ setup(
     keywords='proxyscrape proxy scrape scraper',
     packages=['proxyscrape'],
     test_suite='tests',
-    install_requires = [
+    install_requires=[
         'BeautifulSoup4',
         'requests'
     ]
