@@ -9,7 +9,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 setup(
     name='proxyscrape',
     version='0.0.0',
-    description='',
+    description='A library for retrieving free proxies (HTTP, HTTPS, SOCKS4, SOCKS5).',
     long_description=long_description,
     url='https://github.com/jaredlgillespie/proxyscrape',
     author='Jared Gillespie',
