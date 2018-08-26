@@ -103,10 +103,10 @@ are given, the resources for each of the types will be used to retrieve proxies.
 
 Once created, proxies can be retrieved via the `get_proxy(...)` function. This optionally takes a `filter_opts`
 parameter which can filter by the following:
- - `code` (us, ca, ...)
- - `country` (united states, canada, ...)
- - `anonymous` (True, False)
- - `type` (http, https, socks4, socks5, ...)
+- ``code`` (us, ca, ...)
+- ``country`` (united states, canada, ...)
+- ``anonymous`` (True, False)
+- ``type`` (http, https, socks4, socks5, ...)
 
 .. code-block:: python
 
