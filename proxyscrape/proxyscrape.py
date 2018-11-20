@@ -71,7 +71,7 @@ def add_resource(name, func, resource_types=None):
         If 'name' is already a defined resource.
     """
     if name in RESOURCE_MAP:
-        raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
+        raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
 
     if resource_types is not None:
         if not _is_iterable(resource_types):
@@ -79,12 +79,13 @@ def add_resource(name, func, resource_types=None):
 
         for resource_type in resource_types:
             if resource_type not in RESOURCE_TYPE_MAP:
-                raise InvalidResourceTypeError(f'{resource_type} is not a defined resource type')
+                raise InvalidResourceTypeError(
+                    '{} is not a defined resource type'.format(resource_type))
 
     with _resource_lock:
         # Ensure not added by the time entered lock
         if name in RESOURCE_MAP:
-            raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
+            raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
 
         RESOURCE_MAP[name] = func
 
@@ -108,12 +109,14 @@ def add_resource_type(name, resources=None):
         If 'name' is already a defined resource type.
     """
     if name in RESOURCE_TYPE_MAP:
-        raise ResourceTypeAlreadyDefinedError(f'{name} is already defined as a resource type')
+        raise ResourceTypeAlreadyDefinedError(
+            '{} is already defined as a resource type'.format(name))
 
     with _resource_type_lock:
         # Ensure not added by the time entered lock
         if name in RESOURCE_TYPE_MAP:
-            raise ResourceTypeAlreadyDefinedError(f'{name} is already defined as a resource type')
+            raise ResourceTypeAlreadyDefinedError(
+                '{} is already defined as a resource type'.format(name))
 
         if resources is not None:
             if not _is_iterable(resources):
@@ -122,7 +125,7 @@ def add_resource_type(name, resources=None):
 
             for resource in resources:
                 if resource not in RESOURCE_MAP:
-                    raise InvalidResourceError(f'{resource} is an invalid resource')
+                    raise InvalidResourceError('{} is an invalid resource'.format(resource))
         else:
             resources = set()
 
@@ -161,12 +164,12 @@ def create_collector(name, resource_types=None, refresh_interval=3600, resources
         If 'resource_type' is not a valid resource type.
     """
     if name in COLLECTORS:
-        raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
+        raise CollectorAlreadyDefinedError('{} is already defined as a collector'.format(name))
 
     with _collector_lock:
         # Ensure not added by the time entered lock
         if name in COLLECTORS:
-            raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
+            raise CollectorAlreadyDefinedError('{} is already defined as a collector'.format(name))
 
         collector = Collector(resource_types, refresh_interval, resources)
         COLLECTORS[name] = collector
@@ -188,7 +191,7 @@ def get_collector(name):
     if name in COLLECTORS:
         return COLLECTORS[name]
 
-    raise CollectorNotFoundError(f'{name} is not a defined collector')
+    raise CollectorNotFoundError('{} is not a defined collector'.format(name))
 
 
 def get_resource_types():
@@ -305,20 +308,21 @@ class Collector:
             return
 
         if not isinstance(filter_opts, dict):
-            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
+            raise InvalidFilterOptionError('{} must be a dictionary'.format(filter_opts))
 
         for key in filter_opts:
             if key not in FILTER_OPTIONS:
-                raise InvalidFilterOptionError(f'{key} is an invalid filter option')
+                raise InvalidFilterOptionError('{} is an invalid filter option'.format(key))
 
     def _validate_resource_types(self, resource_types):
         if set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
-            raise InvalidResourceTypeError(f'{resource_types} defined an invalid resource type')
+            raise InvalidResourceTypeError(
+                '{} defined an invalid resource type'.format(resource_types))
 
     def _validate_resources(self, resources):
         for resource in resources:
             if resource not in RESOURCE_MAP:
-                raise InvalidResourceError(f'{resource} is an invalid resource')
+                raise InvalidResourceError('{} is an invalid resource'.format(resource))
 
     def apply_filter(self, filter_opts):
         """Applies a filter to the collector for retrieving proxies matching specific criteria.
@@ -426,7 +430,8 @@ class Collector:
         for proxy in proxies:
             resource_type = proxy.source
             if resource_type not in self._resource_map:
-                raise InvalidResourceTypeError(f'{resource_type} is not a valid resource type')
+                raise InvalidResourceTypeError(
+                    '{} is not a valid resource type'.format(resource_type))
 
             id = self._resource_map[resource_type]['id']
             self._store.remove_proxy(id, proxy)
