@@ -40,7 +40,7 @@ The latest version of proxyscrape is available via ``pip``:
 
 .. code-block:: bash
 
-    $ pip install proxyscrape
+    $ pip install proxyscrape23
 
 Alternatively, you can download and install from source:
 
