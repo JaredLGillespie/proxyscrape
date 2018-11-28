@@ -38,6 +38,7 @@ setup(
     ],
     keywords='proxyscrape proxy scrape scraper',
     packages=['proxyscrape'],
+    include_package_data=True,
     test_suite='tests',
     install_requires=[
         'BeautifulSoup4',
