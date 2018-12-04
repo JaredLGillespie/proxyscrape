@@ -24,13 +24,19 @@
 import time
 from threading import Thread
 import unittest
-from unittest.mock import Mock
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 
 # TODO: Change these to not be *
-from proxyscrape import *
-from proxyscrape.errors import *
+from proxyscrape.proxyscrape import *
 import proxyscrape.proxyscrape as ps
 from proxyscrape.scrapers import Proxy
+from proxyscrape.errors import (
+                     CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError,
+                     InvalidResourceError, InvalidResourceTypeError, ResourceAlreadyDefinedError,
+                     ResourceTypeAlreadyDefinedError)
 
 
 RESOURCE_MAP_COPY = ps.RESOURCE_MAP.copy()

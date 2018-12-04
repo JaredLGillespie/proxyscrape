@@ -145,7 +145,9 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
         if len(row) == 0:
             continue
 
-        proxies.add(Proxy(*row.split(':'), None, None, None, type, source))
+        params = row.split(':')
+        params.extend([None, None, None, type, source])
+        proxies.add(Proxy(*params))
     return proxies
 
 

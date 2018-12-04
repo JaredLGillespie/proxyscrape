@@ -1,3 +1,5 @@
 include README.rst
 include CHANGELOG.rst
 include LICENSE.txt
+
+include proxyscrape/VERSION

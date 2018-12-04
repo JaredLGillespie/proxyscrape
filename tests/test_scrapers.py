@@ -23,18 +23,18 @@
 import os
 import time
 import unittest
-from unittest.mock import Mock, patch
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 from proxyscrape.scrapers import Proxy, ProxyResource, RESOURCE_MAP
 
 
 class TestProxyResource(unittest.TestCase):
     def test_refreshes_if_expired(self):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
-        call_count = 0
 
         def func():
-            nonlocal call_count
-            call_count += 1
             return expected
 
         pr = ProxyResource(func, -1)
@@ -49,11 +49,8 @@ class TestProxyResource(unittest.TestCase):
 
     def test_doesnt_refresh_if_not_expired(self):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
-        call_count = 0
 
         def func():
-            nonlocal call_count
-            call_count += 1
             return expected
 
         pr = ProxyResource(func, 5)
@@ -68,11 +65,8 @@ class TestProxyResource(unittest.TestCase):
 
     def test_refreshes_if_forced(self):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
-        call_count = 0
 
         def func():
-            nonlocal call_count
-            call_count += 1
             return expected
 
         pr = ProxyResource(func, 5)
@@ -87,11 +81,8 @@ class TestProxyResource(unittest.TestCase):
 
     def test_doesnt_refresh_if_lock_check(self):
         expected = [Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')]
-        call_count = 0
 
         def func():
-            nonlocal call_count
-            call_count += 1
             return expected
 
         pr = ProxyResource(func, 5)
