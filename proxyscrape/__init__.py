@@ -41,8 +41,9 @@ This exports:
     - get_resources(...) retrieves all defined resources
 """
 
+from __future__ import absolute_import
 
-from proxyscrape.proxyscrape import (
+from .proxyscrape import (
     add_resource,
     add_resource_type,
     create_collector,
@@ -51,4 +52,4 @@ from proxyscrape.proxyscrape import (
     get_resources
 )
 
-from proxyscrape.scrapers import Proxy
+from .scrapers import Proxy
