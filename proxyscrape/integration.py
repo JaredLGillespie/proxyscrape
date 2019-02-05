@@ -106,7 +106,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
 
         try:
             proxies = set()
-            code = None if country is 'all' else country
+            code = None if country == 'all' else country
             anonymous = anonymity in {'elite', 'anonymous'}
             type = None if 'all' else proxytype
 
