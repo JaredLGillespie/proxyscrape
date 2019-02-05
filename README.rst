@@ -75,8 +75,6 @@ don't require headless browsers or selenium to retrieve. The list of sites proxi
 
 See `Integration`_ section for additional proxies.
 
-.. _Integration: Integration
-
 Getting Started
 ---------------
 
@@ -107,6 +105,7 @@ are given, the resources for each of the types will be used to retrieve proxies.
 
 Once created, proxies can be retrieved via the `get_proxy(...)` function. This optionally takes a `filter_opts`
 parameter which can filter by the following:
+
 - ``code`` (us, ca, ...)
 - ``country`` (united states, canada, ...)
 - ``anonymous`` (True, False)
@@ -243,6 +242,8 @@ The set of library- and user-defined resource types can be retrieved via the `ge
     resources = get_resource_types()
 
 
+.. _Integration:
+
 Integration
 -----------
 
@@ -257,11 +258,12 @@ an efficient manner. These are vetted and validated with a minimal response time
 The `get_proxyscrape_resource(...)` function is used to dynamically create a new resource for using the proxyscrape API.
 The resource name can then be added to a resource type and used like any other library- or user-defined resource. The
 following parameters are used for the API:
- - ``proxytype`` (http, socks4, socks5, all)
- - ``timeout`` (milliseconds > 0)
- - ``ssl`` (yes, no, all)
- - ``anonymity`` (elite, anonymous, transparent, all)
- - ``country`` (any Alpha 2 ISO country code, all)
+
+- ``proxytype`` (http, socks4, socks5, all)
+- ``timeout`` (milliseconds > 0)
+- ``ssl`` (yes, no, all)
+- ``anonymity`` (elite, anonymous, transparent, all)
+- ``country`` (any Alpha 2 ISO country code, all)
 
 .. code-block:: python
 
