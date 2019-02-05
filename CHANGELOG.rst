@@ -9,6 +9,9 @@ The format is based on `Keep a Changelog`_ and this project adheres to `Semantic
 
 `Unreleased`_
 -------------
+Added
+^^^^^
+- Integration with proxyscrape.com
 
 `0.1.1`_ - 2018-12-03
 ---------------------
