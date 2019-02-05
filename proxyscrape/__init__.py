@@ -55,6 +55,7 @@ from .errors import (
     ResourceAlreadyDefinedError,
     ResourceTypeAlreadyDefinedError
 )
+from .integration import get_proxyscrape_resource
 from .proxyscrape import (
     create_collector,
     get_collector
