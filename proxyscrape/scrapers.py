@@ -20,19 +20,29 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['Proxy', 'ProxyResource', 'RESOURCE_MAP', 'RESOURCE_TYPE_MAP']
+__all__ = ['add_resource', 'add_resource_type', 'get_resources', 'get_resource_types', 'ProxyResource', 'RESOURCE_MAP',
+           'RESOURCE_TYPE_MAP']
 
 
 from bs4 import BeautifulSoup
-from collections import namedtuple
 from threading import Lock
 import requests
 import time
 
-from .errors import InvalidHTMLError, RequestNotOKError
-
-
-Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'type', 'source'])
+from .errors import (
+    InvalidHTMLError,
+    InvalidResourceError,
+    InvalidResourceTypeError,
+    RequestNotOKError,
+    ResourceAlreadyDefinedError,
+    ResourceTypeAlreadyDefinedError
+)
+from .shared import (
+    is_iterable,
+    Proxy
+)
+_resource_lock = Lock()
+_resource_type_lock = Lock()
 
 
 class ProxyResource:
@@ -42,7 +52,6 @@ class ProxyResource:
         The scraping function.
     :param refresh_interval:
         The minimum time (in seconds) between each refresh.
-    :type url: string
     :type func: function
     :type refresh_interval: int
     """
@@ -301,6 +310,105 @@ def get_us_proxies():
         return proxies
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
+
+
+def add_resource(name, func, resource_types=None):
+    """Adds a new resource, which is representative of a function that scrapes a particular set of proxies.
+
+    :param name:
+        An identifier for the resource.
+    :param func:
+        The scraping function.
+    :param resource_types:
+        (optional) The resource types to add the resource to. Can either be a single or sequence of resource types.
+    :type name: string
+    :type func: function
+    :type resource_types: iterable or string or None
+    :raises InvalidResourceTypeError:
+        If 'resource_types' is defined are does not represent defined resource types.
+    :raises ResourceAlreadyDefinedError:
+        If 'name' is already a defined resource.
+    """
+    if name in RESOURCE_MAP:
+        raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
+
+    if resource_types is not None:
+        if not is_iterable(resource_types):
+            resource_types = {resource_types, }
+
+        for resource_type in resource_types:
+            if resource_type not in RESOURCE_TYPE_MAP:
+                raise InvalidResourceTypeError(
+                    '{} is not a defined resource type'.format(resource_type))
+
+    with _resource_lock:
+        # Ensure not added by the time entered lock
+        if name in RESOURCE_MAP:
+            raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
+
+        RESOURCE_MAP[name] = func
+
+        if resource_types is not None:
+            for resource_type in resource_types:
+                RESOURCE_TYPE_MAP[resource_type].add(name)
+
+
+def add_resource_type(name, resources=None):
+    """Adds a new resource type, which is a representative of a group of resources.
+
+    :param name:
+        An identifier for the resource type.
+    :param resources:
+        (optional) The resources to add to the resource type. Can either be a single or sequence of resources.
+    :type name: string
+    :type resources: string or iterable
+    :raises InvalidResourceError:
+        If any of the resources are invalid.
+    :raises ResourceTypeAlreadyDefinedError:
+        If 'name' is already a defined resource type.
+    """
+    if name in RESOURCE_TYPE_MAP:
+        raise ResourceTypeAlreadyDefinedError(
+            '{} is already defined as a resource type'.format(name))
+
+    with _resource_type_lock:
+        # Ensure not added by the time entered lock
+        if name in RESOURCE_TYPE_MAP:
+            raise ResourceTypeAlreadyDefinedError(
+                '{} is already defined as a resource type'.format(name))
+
+        if resources is not None:
+            if not is_iterable(resources):
+                resources = {resources, }
+            resources = set(resources)
+
+            for resource in resources:
+                if resource not in RESOURCE_MAP:
+                    raise InvalidResourceError('{} is an invalid resource'.format(resource))
+        else:
+            resources = set()
+
+        RESOURCE_TYPE_MAP[name] = resources
+
+
+def get_resource_types():
+    """Returns a set of the resource types.
+
+    :return:
+        The defined resource types.
+    :rtype: set
+    """
+    return set(RESOURCE_TYPE_MAP.keys())
+
+
+def get_resources():
+    """Returns a set of the resources.
+
+    :return:
+        The defined resources.
+    :rtype: set
+    """
+    return set(RESOURCE_MAP.keys())
 
 
 RESOURCE_MAP = {

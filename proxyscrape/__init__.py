@@ -43,13 +43,26 @@ This exports:
 
 from __future__ import absolute_import
 
+from .errors import (
+    ProxyScrapeBaseException,
+    CollectorAlreadyDefinedError,
+    CollectorNotFoundError,
+    InvalidFilterOptionError,
+    InvalidHTMLError,
+    InvalidResourceError,
+    InvalidResourceTypeError,
+    RequestNotOKError,
+    ResourceAlreadyDefinedError,
+    ResourceTypeAlreadyDefinedError
+)
 from .proxyscrape import (
+    create_collector,
+    get_collector
+)
+from .scrapers import (
     add_resource,
     add_resource_type,
-    create_collector,
-    get_collector,
     get_resource_types,
     get_resources
 )
-
-from .scrapers import Proxy
+from .shared import Proxy
