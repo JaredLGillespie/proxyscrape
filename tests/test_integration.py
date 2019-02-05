@@ -88,9 +88,9 @@ class TestIntegrationProxyScrape(unittest.TestCase):
             resource_name = get_proxyscrape_resource()
 
             expected = {
-                Proxy('179.124.59.232', '53281', 'all', None, False, None, resource_name),
-                Proxy('200.107.59.98', '8080', 'all', None, False, None, resource_name),
-                Proxy('217.172.244.7', '8080', 'all', None, False, None, resource_name)
+                Proxy('179.124.59.232', '53281', None, None, False, None, resource_name),
+                Proxy('200.107.59.98', '8080', None, None, False, None, resource_name),
+                Proxy('217.172.244.7', '8080', None, None, False, None, resource_name)
             }
 
             func = pss.RESOURCE_MAP[resource_name]
