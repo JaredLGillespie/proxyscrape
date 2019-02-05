@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 
+import os
 import time
 from threading import Thread
 import unittest
@@ -468,3 +469,8 @@ class TestCollector(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    cwd = os.getcwd()
+elif __name__ == 'test_proxyscrape':
+    cwd = os.getcwd()
+elif __name__ == 'tests.test_proxyscrape':
+    cwd = os.path.join(os.getcwd(), 'tests')

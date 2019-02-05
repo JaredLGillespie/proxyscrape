@@ -20,6 +20,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
+import os
 import unittest
 from proxyscrape.scrapers import Proxy
 from proxyscrape.stores import Store
@@ -161,3 +163,8 @@ class TestStores(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    cwd = os.getcwd()
+elif __name__ == 'test_stores':
+    cwd = os.getcwd()
+elif __name__ == 'tests.test_stores':
+    cwd = os.path.join(os.getcwd(), 'tests')
