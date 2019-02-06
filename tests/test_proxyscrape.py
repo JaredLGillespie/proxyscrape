@@ -65,11 +65,13 @@ class TestProxyScrape(unittest.TestCase):
 
     def test_create_collection_exception_if_duplicate_lock_check(self):
         def func(): ps.COLLECTORS['my-collector'] = object()
-        t = Thread(target=hold_lock, args=(ps._collector_lock, 0.01, func))
+        t = Thread(target=hold_lock, args=(ps._collector_lock, 1, func))
         t.start()
 
         with self.assertRaises(CollectorAlreadyDefinedError):
             create_collector('my-collector', 'http')
+
+        t.join()
 
     def test_create_collector_creates_if_new(self):
         collector = create_collector('my-collector', 'http')

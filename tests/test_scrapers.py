@@ -597,11 +597,13 @@ class TestResource(unittest.TestCase):
 
     def test_add_resource_exception_if_duplicate_lock_check(self):
         def func(): pss.RESOURCE_MAP['my-resource'] = {}
-        t = Thread(target=hold_lock, args=(_resource_lock, 0.01, func))
+        t = Thread(target=hold_lock, args=(_resource_lock, 1, func))
         t.start()
 
         with self.assertRaises(ResourceAlreadyDefinedError):
             add_resource('my-resource', lambda: set(), 'http')
+
+        t.join()
 
     def test_add_resource_single_resource_type(self):
         add_resource('my-resource', lambda: set(), 'http')
@@ -628,11 +630,13 @@ class TestResource(unittest.TestCase):
 
     def test_add_resource_type_exception_if_duplicate_lock_check(self):
         def func(): pss.RESOURCE_TYPE_MAP['my-resource-type'] = set()
-        t = Thread(target=hold_lock, args=(_resource_type_lock, 0.01, func))
+        t = Thread(target=hold_lock, args=(_resource_type_lock, 1, func))
         t.start()
 
         with self.assertRaises(ResourceTypeAlreadyDefinedError):
             add_resource_type('my-resource-type')
+
+        t.join()
 
     def test_add_resource_type_adds_if_new(self):
         add_resource_type('my-resource-type')
