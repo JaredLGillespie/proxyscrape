@@ -52,27 +52,34 @@ def hold_lock(lock, hold_time, func):
         func()
 
 
+def get_random_collector_name(self):
+    return self._testMethodName + '-collector'
+
+
 class TestProxyScrape(unittest.TestCase):
     def setUp(self):
         # Revert constants to defaults before each test
         ps.COLLECTORS.clear()
+        self.collector_name = get_random_collector_name(self)
 
     def test_create_collector_exception_if_duplicate(self):
-        create_collector('my-collector', 'http')
+        create_collector(self.collector_name, 'http')
 
         with self.assertRaises(CollectorAlreadyDefinedError):
-            create_collector('my-collector', 'socks4')
+            create_collector(self.collector_name, 'socks4')
 
     def test_create_collection_exception_if_duplicate_lock_check(self):
-        def func(): ps.COLLECTORS['my-collector'] = object()
-        t = Thread(target=hold_lock, args=(ps._collector_lock, 0.01, func))
+        def func(): ps.COLLECTORS[self.collector_name] = object()
+        t = Thread(target=hold_lock, args=(ps._collector_lock, 0.1, func))
         t.start()
 
         with self.assertRaises(CollectorAlreadyDefinedError):
-            create_collector('my-collector', 'http')
+            create_collector(self.collector_name, 'http')
+
+        t.join()
 
     def test_create_collector_creates_if_new(self):
-        collector = create_collector('my-collector', 'http')
+        collector = create_collector(self.collector_name, 'http')
         self.assertIsNotNone(collector)
 
     def test_get_collector_exception_if_undefined(self):
@@ -81,8 +88,8 @@ class TestProxyScrape(unittest.TestCase):
 
     def test_get_collector_returns_correct_collector(self):
         expected = object()
-        ps.COLLECTORS['my-collector'] = expected
-        actual = get_collector('my-collector')
+        ps.COLLECTORS[self.collector_name] = expected
+        actual = get_collector(self.collector_name)
         self.assertEqual(expected, actual)
 
 
