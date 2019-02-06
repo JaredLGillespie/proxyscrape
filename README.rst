@@ -73,6 +73,8 @@ don't require headless browsers or selenium to retrieve. The list of sites proxi
 | us-proxy           | http, https    | https://www.us-proxy.org                         |
 +--------------------+----------------+--------------------------------------------------+
 
+See `Integration`_ section for additional proxies.
+
 Getting Started
 ---------------
 
@@ -103,6 +105,7 @@ are given, the resources for each of the types will be used to retrieve proxies.
 
 Once created, proxies can be retrieved via the `get_proxy(...)` function. This optionally takes a `filter_opts`
 parameter which can filter by the following:
+
 - ``code`` (us, ca, ...)
 - ``country`` (united states, canada, ...)
 - ``anonymous`` (True, False)
@@ -237,6 +240,38 @@ The set of library- and user-defined resource types can be retrieved via the `ge
 
     from proxyscrape import get_resource_types
     resources = get_resource_types()
+
+
+.. _Integration:
+
+Integration
+-----------
+
+Integrations are proxy implementations that are specific to a particular website or API and have a distinctively
+separate use case.
+
+ProxyScrape
+^^^^^^^^^^^
+The `ProxyScrape.com API`_ provides a means of accessing thousands of proxies of various types (HTTP, SOCKS4, SOCKS5) in
+an efficient manner. These are vetted and validated with a minimal response time.
+
+The `get_proxyscrape_resource(...)` function is used to dynamically create a new resource for using the proxyscrape API.
+The resource name can then be added to a resource type and used like any other library- or user-defined resource. The
+following parameters are used for the API:
+
+- ``proxytype`` (http, socks4, socks5, all)
+- ``timeout`` (milliseconds > 0)
+- ``ssl`` (yes, no, all)
+- ``anonymity`` (elite, anonymous, transparent, all)
+- ``country`` (any Alpha 2 ISO country code, all)
+
+.. code-block:: python
+
+    from proxyscrape import get_proxyscrape_resource
+    resource_name = get_proxyscrape_resource(proxytype='http', timeout=5000, ssl='yes', anonymity='all', country='us')
+
+
+.. _ProxyScrape.com API: https://proxyscrape.com/en/api
 
 Contribution
 ------------

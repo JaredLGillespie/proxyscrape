@@ -22,12 +22,40 @@
 
 import os
 import time
+from threading import Thread
 import unittest
 try:
     from unittest.mock import Mock, patch
 except ImportError:
     from mock import Mock, patch
-from proxyscrape.scrapers import Proxy, ProxyResource, RESOURCE_MAP
+
+from proxyscrape.errors import (
+    InvalidResourceError,
+    InvalidResourceTypeError,
+    ResourceAlreadyDefinedError,
+    ResourceTypeAlreadyDefinedError
+)
+from proxyscrape.scrapers import (
+    add_resource,
+    add_resource_type,
+    get_resources,
+    get_resource_types,
+    _resource_lock,
+    _resource_type_lock,
+    ProxyResource,
+    RESOURCE_MAP
+)
+import proxyscrape.scrapers as pss
+from proxyscrape.shared import Proxy
+
+RESOURCE_MAP_COPY = pss.RESOURCE_MAP.copy()
+RESOURCE_TYPE_MAP_COPY = {k: v.copy() for k, v in pss.RESOURCE_TYPE_MAP.items()}
+
+
+def hold_lock(lock, hold_time, func):
+    with lock:
+        time.sleep(hold_time)
+        func()
 
 
 class TestProxyResource(unittest.TestCase):
@@ -551,21 +579,90 @@ class TestScrapers(unittest.TestCase):
             self.assertIsNone(proxies)
 
 
-# class TestScrapers2(unittest.TestCase):
-#     def test_anonymous_proxies(self):
-#         expected = {
-#             Proxy('179.124.59.232', '53281', 'br', 'brazil', True, 'https', 'anonymous-proxy'),
-#             Proxy('200.107.59.98', '8080', 'ua', 'ukraine', True, 'http', 'anonymous-proxy'),
-#             Proxy('217.172.244.7', '8080', 'ru', 'russian federation', True, 'http', 'anonymous-proxy')
-#         }
-#
-#         func = RESOURCE_MAP['anonymous-proxy']
-#         pr = ProxyResource(func, 10)
-#
-#         _, proxies = pr.refresh()
-#
-#         for proxy in proxies:
-#             self.assertIn(proxy, expected)
+class TestResource(unittest.TestCase):
+    def setUp(self):
+        # Revert constants to defaults before each test
+        pss.RESOURCE_MAP = RESOURCE_MAP_COPY.copy()
+        pss.RESOURCE_TYPE_MAP = {k: v.copy() for k, v in RESOURCE_TYPE_MAP_COPY.items()}
+
+    def test_add_resource_exception_if_duplicate(self):
+        add_resource('my-resource', lambda: set(), 'http')
+
+        with self.assertRaises(ResourceAlreadyDefinedError):
+            add_resource('my-resource', lambda: set(), 'http')
+
+    def test_add_resource_exception_if_invalid_resource_type(self):
+        with self.assertRaises(InvalidResourceTypeError):
+            add_resource('my-resource', lambda: set(), 'invalid')
+
+    def test_add_resource_exception_if_duplicate_lock_check(self):
+        def func(): pss.RESOURCE_MAP['my-resource'] = {}
+        t = Thread(target=hold_lock, args=(_resource_lock, 0.01, func))
+        t.start()
+
+        with self.assertRaises(ResourceAlreadyDefinedError):
+            add_resource('my-resource', lambda: set(), 'http')
+
+    def test_add_resource_single_resource_type(self):
+        add_resource('my-resource', lambda: set(), 'http')
+
+        self.assertIn('my-resource', pss.RESOURCE_MAP)
+        self.assertIn('my-resource', pss.RESOURCE_TYPE_MAP['http'])
+
+    def test_add_resource_multiple_resource_types(self):
+        add_resource('my-resource', lambda: set(), ['http', 'socks4'])
+
+        self.assertIn('my-resource', pss.RESOURCE_MAP)
+        self.assertIn('my-resource', pss.RESOURCE_TYPE_MAP['http'])
+        self.assertIn('my-resource', pss.RESOURCE_TYPE_MAP['socks4'])
+
+    def test_add_resource_none_resource_types(self):
+        add_resource('my-resource', lambda: set(), None)
+        self.assertIn('my-resource', pss.RESOURCE_MAP)
+
+    def test_add_resource_type_exception_if_duplicate(self):
+        add_resource_type('my-resource-type')
+
+        with self.assertRaises(ResourceTypeAlreadyDefinedError):
+            add_resource_type('my-resource-type')
+
+    def test_add_resource_type_exception_if_duplicate_lock_check(self):
+        def func(): pss.RESOURCE_TYPE_MAP['my-resource-type'] = set()
+        t = Thread(target=hold_lock, args=(_resource_type_lock, 0.01, func))
+        t.start()
+
+        with self.assertRaises(ResourceTypeAlreadyDefinedError):
+            add_resource_type('my-resource-type')
+
+    def test_add_resource_type_adds_if_new(self):
+        add_resource_type('my-resource-type')
+        self.assertIn('my-resource-type', pss.RESOURCE_TYPE_MAP)
+
+    def test_add_resource_single_resource(self):
+        add_resource_type('my-resource-type', 'us-proxy')
+        self.assertIn('my-resource-type', pss.RESOURCE_TYPE_MAP)
+        self.assertSetEqual({'us-proxy'}, pss.RESOURCE_TYPE_MAP['my-resource-type'])
+
+    def test_add_resource_type_multiple_resources(self):
+        add_resource_type('my-resource-type', ('us-proxy', 'uk-proxy'))
+        self.assertIn('my-resource-type', pss.RESOURCE_TYPE_MAP)
+        self.assertSetEqual({'us-proxy', 'uk-proxy'}, pss.RESOURCE_TYPE_MAP['my-resource-type'])
+
+    def test_add_resource_type_exception_if_invalid_resource(self):
+        with self.assertRaises(InvalidResourceError):
+            add_resource_type('my-resource-type', 'my-resource')
+
+    def test_get_resource_types_returns_correct(self):
+        expected = set(pss.RESOURCE_TYPE_MAP.keys()).union({'my-resource-type'})
+        add_resource_type('my-resource-type')
+        actual = set(get_resource_types())
+        self.assertSetEqual(expected, actual)
+
+    def test_get_resources_returns_correct(self):
+        expected = set(pss.RESOURCE_MAP.keys()).union({'my-resource'})
+        add_resource('my-resource', lambda: set(), 'http')
+        actual = set(get_resources())
+        self.assertSetEqual(expected, actual)
 
 
 if __name__ == '__main__':

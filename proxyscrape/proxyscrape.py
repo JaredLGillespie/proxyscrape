@@ -20,116 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__all__ = ['add_resource', 'add_resource_type', 'create_collector', 'get_collector', 'get_resource_types',
-           'get_resources']
+__all__ = ['create_collector', 'get_collector']
 
 
 from threading import Lock
 
-from .errors import (CollectorAlreadyDefinedError, CollectorNotFoundError, InvalidFilterOptionError,
-                     InvalidResourceError, InvalidResourceTypeError, ResourceAlreadyDefinedError,
-                     ResourceTypeAlreadyDefinedError)
-
-from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, Proxy, ProxyResource
+from .errors import (
+    CollectorAlreadyDefinedError,
+    CollectorNotFoundError,
+    InvalidFilterOptionError,
+    InvalidResourceError,
+    InvalidResourceTypeError
+)
+from .scrapers import RESOURCE_MAP, RESOURCE_TYPE_MAP, ProxyResource
 from .stores import Store, FILTER_OPTIONS
+from .shared import is_iterable
 
 
 # Module-level references to collectors
 COLLECTORS = {}
-
 _collector_lock = Lock()
-_resource_lock = Lock()
-_resource_type_lock = Lock()
-
-
-def _is_iterable(obj):
-    if isinstance(obj, str) or isinstance(obj, Proxy):
-        return False
-
-    try:
-        iter(obj)
-        return True
-    except TypeError:
-        return False
-
-
-def add_resource(name, func, resource_types=None):
-    """Adds a new resource, which is representative of a function that scrapes a particular set of proxies.
-
-    :param name:
-        An identifier for the resource.
-    :param func:
-        The scraping function.
-    :param resource_types:
-        (optional) The resource types to add the resource to. Can either be a single or sequence of resource types.
-    :type name: string
-    :type func: function
-    :type resource_types: iterable or string or None
-    :raises InvalidResourceTypeError:
-        If 'resource_types' is defined are does not represent defined resource types.
-    :raises ResourceAlreadyDefinedError:
-        If 'name' is already a defined resource.
-    """
-    if name in RESOURCE_MAP:
-        raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
-
-    if resource_types is not None:
-        if not _is_iterable(resource_types):
-            resource_types = {resource_types, }
-
-        for resource_type in resource_types:
-            if resource_type not in RESOURCE_TYPE_MAP:
-                raise InvalidResourceTypeError(
-                    '{} is not a defined resource type'.format(resource_type))
-
-    with _resource_lock:
-        # Ensure not added by the time entered lock
-        if name in RESOURCE_MAP:
-            raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
-
-        RESOURCE_MAP[name] = func
-
-        if resource_types is not None:
-            for resource_type in resource_types:
-                RESOURCE_TYPE_MAP[resource_type].add(name)
-
-
-def add_resource_type(name, resources=None):
-    """Adds a new resource type, which is a representative of a group of resources.
-
-    :param name:
-        An identifier for the resource type.
-    :param resources:
-        (optional) The resources to add to the resource type. Can either be a single or sequence of resources.
-    :type name: string
-    :type resources: string or iterable
-    :raises InvalidResourceError:
-        If any of the resources are invalid.
-    :raises ResourceTypeAlreadyDefinedError:
-        If 'name' is already a defined resource type.
-    """
-    if name in RESOURCE_TYPE_MAP:
-        raise ResourceTypeAlreadyDefinedError(
-            '{} is already defined as a resource type'.format(name))
-
-    with _resource_type_lock:
-        # Ensure not added by the time entered lock
-        if name in RESOURCE_TYPE_MAP:
-            raise ResourceTypeAlreadyDefinedError(
-                '{} is already defined as a resource type'.format(name))
-
-        if resources is not None:
-            if not _is_iterable(resources):
-                resources = {resources, }
-            resources = set(resources)
-
-            for resource in resources:
-                if resource not in RESOURCE_MAP:
-                    raise InvalidResourceError('{} is an invalid resource'.format(resource))
-        else:
-            resources = set()
-
-        RESOURCE_TYPE_MAP[name] = resources
 
 
 def create_collector(name, resource_types=None, refresh_interval=3600, resources=None):
@@ -194,26 +104,6 @@ def get_collector(name):
     raise CollectorNotFoundError('{} is not a defined collector'.format(name))
 
 
-def get_resource_types():
-    """Returns a set of the resource types.
-
-    :return:
-        The defined resource types.
-    :rtype: set
-    """
-    return set(RESOURCE_TYPE_MAP.keys())
-
-
-def get_resources():
-    """Returns a set of the resources.
-
-    :return:
-        The defined resources.
-    :rtype: set
-    """
-    return set(RESOURCE_MAP.keys())
-
-
 class Collector:
     """A proxy collector for retrieving proxies.
 
@@ -240,7 +130,7 @@ class Collector:
         self._blacklist = set()
 
         if resource_types is not None:
-            self._resource_types = set(resource_types) if _is_iterable(resource_types) else {resource_types, }
+            self._resource_types = set(resource_types) if is_iterable(resource_types) else {resource_types, }
             self._validate_resource_types(self._resource_types)
             self._filter_opts = {'type': self._resource_types.copy()}
         else:
@@ -270,7 +160,7 @@ class Collector:
             return existing_filter_opts
 
         for key, value in new_filter_opts.items():
-            if not _is_iterable(value):
+            if not is_iterable(value):
                 value = {value, }
             value = set(value)
 
@@ -290,7 +180,7 @@ class Collector:
                 res.update(RESOURCE_TYPE_MAP[resource_type])
             return res
 
-        if _is_iterable(resources):
+        if is_iterable(resources):
             return set(resources)
         else:
             return {resources, }
@@ -365,7 +255,7 @@ class Collector:
             A single or sequence of proxies to blacklist.
         :type proxies: Proxy or iterable
         """
-        if not _is_iterable(proxies):
+        if not is_iterable(proxies):
             proxies = {proxies, }
         proxies = set(proxies)
 
@@ -424,7 +314,7 @@ class Collector:
         if proxies is None:
             return
 
-        if not _is_iterable(proxies):
+        if not is_iterable(proxies):
             proxies = {proxies, }
 
         for proxy in proxies:
