@@ -12,6 +12,9 @@ The format is based on `Keep a Changelog`_ and this project adheres to `Semantic
 Added
 ^^^^^
 - Integration with proxyscrape.com
+Changed
+^^^^^^^
+- Blacklist is now by host + IP only
 
 `0.1.1`_ - 2018-12-03
 ---------------------
