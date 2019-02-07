@@ -246,18 +246,30 @@ class Collector:
         self._validate_filter_opts(filter_opts)
         self._extend_filter(self._filter_opts, filter_opts)
 
-    def blacklist_proxy(self, proxies):
+    def blacklist_proxy(self, proxies=None, host=None, port=None):
         """Blacklists a specific a proxy from being retrieved.
 
-        Blacklitse
+        Either a single or sequence of proxies should be given, or an host and ip combination.
 
         :param proxies:
-            A single or sequence of proxies to blacklist.
+            (optional) A single or sequence of proxies to blacklist.
+        :param host:
+            (optional) The host IP of the proxy.
+        :param port:
+            (optional) The port number of the proxy.
         :type proxies: Proxy or iterable
+        :raises ValueError:
+            If neither proxies nor host and port are given.
         """
-        if not is_iterable(proxies):
-            proxies = {proxies, }
-        proxies = set(proxies)
+        if proxies is None and None in (host, port):
+            raise ValueError('Either proxies or host and port should be given')
+
+        if proxies is None:
+            proxies = {(host, port), }
+        elif not is_iterable(proxies):
+            proxies = {(proxies[0], proxies[1]), }
+        else:
+            proxies = {(p[0], p[1]) for p in proxies}
 
         self._blacklist.update(proxies)
 
@@ -316,6 +328,8 @@ class Collector:
 
         if not is_iterable(proxies):
             proxies = {proxies, }
+        else:
+            proxies = set(proxies)
 
         for proxy in proxies:
             resource_type = proxy.source
