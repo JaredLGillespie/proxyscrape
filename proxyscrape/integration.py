@@ -44,20 +44,20 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
 
     :param proxytype:
         (optional) The type of proxy. Can be one of 4 values: 'http', 'socks4', 'socks5', 'all. Defaults to 'all'.
-    :type proxytype: string
     :param timeout:
         (optional) The minimal response time of the proxy, specified in milliseconds. Defaults to 10000ms.
-    :type timeout: int
     :param ssl:
         (optional). Whether the proxies should be over ssl. Can be one of 3 values: 'yes', 'no', 'all'. Defaults to
         'all'.
-    :type ssl: string
     :param anonymity:
         The anonymity level of the proxies. Can be one of 4 values: 'elite', 'anonymous', 'transparent', 'all'.
-    :type anonymity: string
     :param country:
         The countries the proxies should correspond to. Should be any Alpha 2 ISO country code, or 'all'. Defaults to
         'all'.
+    :type proxytype: string
+    :type timeout: int
+    :type ssl: string
+    :type anonymity: string
     :type country: string
     :return:
         Returns the name of the new resource.

@@ -80,6 +80,8 @@ class Store:
             (optional) Options to filter the proxies by.
         :param blacklist:
             (optional) Specific proxies to not retrieve.
+        :type filter_opts: dict or None
+        :type blacklist: set
         :return:
             A single proxy matching the given filters.
         :rtype: Proxy or None

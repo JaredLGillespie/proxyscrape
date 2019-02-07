@@ -107,7 +107,6 @@ def get_collector(name):
 class Collector:
     """A proxy collector for retrieving proxies.
 
-
     :param resource_types:
         (optional) The resource types to to scrape. Can either be a single or sequence of resource types. Either
         `resource_types` or `resources` should be defined (but not necessarily both).
@@ -186,7 +185,6 @@ class Collector:
             return {resources, }
 
     def _refresh_resources(self, force):
-        # TODO: Need to do asynchronously + concurrently
         for resource in self._resource_map.values():
             refreshed, proxies = resource['proxy-resource'].refresh(force)
 
@@ -257,7 +255,9 @@ class Collector:
             (optional) The host IP of the proxy.
         :param port:
             (optional) The port number of the proxy.
-        :type proxies: Proxy or iterable
+        :type proxies: Proxy or iterable or None
+        :type host: str or None
+        :type port: str or None
         :raises ValueError:
             If neither proxies nor host and port are given.
         """
@@ -321,7 +321,9 @@ class Collector:
             (optional) The host IP of the proxy.
         :param port:
             (optional) The port number of the proxy.
-        :type proxies: Proxy or iterable
+        :type proxies: Proxy or iterable or None
+        :type host: str or None
+        :type port: str or None
         :raises ValueError:
             If neither proxies nor host and port are given.
         """
