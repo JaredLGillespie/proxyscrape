@@ -12,6 +12,8 @@ The format is based on `Keep a Changelog`_ and this project adheres to `Semantic
 Added
 ^^^^^
 - Integration with proxyscrape.com
+- Able to remove individual proxies from blacklist
+
 Changed
 ^^^^^^^
 - Blacklist is now by host + IP only

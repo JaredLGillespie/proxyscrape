@@ -290,6 +290,51 @@ class TestCollector(unittest.TestCase):
         store_mock.get_proxy.assert_called_once_with({'type': {'http', }}, collector._blacklist)
         self.assertIsNone(actual)
 
+    def test_remove_blacklist_single(self):
+        collector = ps.Collector('http', 10, None)
+        proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        collector.blacklist_proxy(proxy)
+        collector.remove_blacklist(proxy)
+
+        self.assertEqual(0, len(collector._blacklist))
+
+    def test_remove_blacklist_multiple(self):
+        collector = ps.Collector('http', 10, None)
+        proxies = {
+            Proxy('host1', 'port', 'code', 'country', 'anonymous', 'type', 'source'),
+            Proxy('host2', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        }
+
+        collector.blacklist_proxy(proxies)
+        collector.remove_blacklist(proxies)
+
+        self.assertEqual(0, len(collector._blacklist))
+
+    def test_remove_blacklist_exception_if_invalid_parameters(self):
+        collector = ps.Collector('http', 10, None)
+        with self.assertRaises(ValueError):
+            collector.remove_blacklist()
+
+    def test_remove_blacklist_single_with_host_and_port(self):
+        collector = ps.Collector('http', 10, None)
+        proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        collector.blacklist_proxy(proxy)
+        collector.remove_blacklist(host='host', port='port')
+
+        self.assertEqual(0, len(collector._blacklist))
+
+    def test_remove_blacklist_removes_correct_proxy(self):
+        collector = ps.Collector('http', 10, None)
+        proxy1 = Proxy('host1', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        proxy2 = Proxy('host2', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        proxies = {proxy1, proxy2}
+
+        collector.blacklist_proxy(proxies)
+        collector.remove_blacklist(proxy1)
+
+        self.assertEqual(1, len(collector._blacklist))
+        self.assertIn((proxy2[0], proxy2[1]), collector._blacklist)
+
     def test_remove_proxy_does_nothing_if_none(self):
         store_mock = Mock()
         store_mock.return_value = store_mock  # Ensure same instance when initialized

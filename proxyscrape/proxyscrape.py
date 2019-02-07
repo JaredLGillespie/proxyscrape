@@ -249,7 +249,7 @@ class Collector:
     def blacklist_proxy(self, proxies=None, host=None, port=None):
         """Blacklists a specific a proxy from being retrieved.
 
-        Either a single or sequence of proxies should be given, or an host and ip combination.
+        Either a single or sequence of proxies should be given, or a host and port number combination.
 
         :param proxies:
             (optional) A single or sequence of proxies to blacklist.
@@ -309,6 +309,33 @@ class Collector:
 
         self._refresh_resources(False)
         return self._store.get_proxy(combined_filter_opts, self._blacklist)
+
+    def remove_blacklist(self, proxies=None, host=None, port=None):
+        """Removes proxies from the blacklist.
+
+        Either a single or sequence of proxies should be given, or a host and port number combination.
+
+        :param proxies:
+            (optional) A single or sequence of proxies to blacklist.
+        :param host:
+            (optional) The host IP of the proxy.
+        :param port:
+            (optional) The port number of the proxy.
+        :type proxies: Proxy or iterable
+        :raises ValueError:
+            If neither proxies nor host and port are given.
+        """
+        if proxies is None and None in (host, port):
+            raise ValueError('Either proxies or host and port should be given')
+
+        if proxies is None:
+            proxies = {(host, port), }
+        elif not is_iterable(proxies):
+            proxies = {(proxies[0], proxies[1]), }
+        else:
+            proxies = {(p[0], p[1]) for p in proxies}
+
+        self._blacklist.difference_update(proxies)
 
     def remove_proxy(self, proxies):
         """Removes a proxy from the internal store.
