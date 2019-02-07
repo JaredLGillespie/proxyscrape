@@ -189,6 +189,17 @@ class TestCollector(unittest.TestCase):
         for proxy in proxies:
             self.assertIn((proxy[0], proxy[1]), collector._blacklist)
 
+    def test_blacklist_proxy_exception_if_invalid_parameters(self):
+        collector = ps.Collector('http', 10, None)
+        with self.assertRaises(ValueError):
+            collector.blacklist_proxy()
+
+    def test_blacklist_proxy_single_with_host_and_port(self):
+        collector = ps.Collector('http', 10, None)
+        collector.blacklist_proxy(host='host', port='port')
+
+        self.assertEqual(('host', 'port'), collector._blacklist.pop())
+
     def test_clear_blacklist_clears_correctly(self):
         collector = ps.Collector('http', 10, None)
         proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
