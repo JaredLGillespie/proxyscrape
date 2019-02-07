@@ -47,9 +47,9 @@ from proxyscrape.shared import Proxy
 
 
 def hold_lock(lock, hold_time, func):
-    with lock:
-        time.sleep(hold_time)
-        func()
+    time.sleep(hold_time)
+    func()
+    lock.release()
 
 
 def get_random_collector_name(self):
@@ -70,6 +70,7 @@ class TestProxyScrape(unittest.TestCase):
 
     def test_create_collection_exception_if_duplicate_lock_check(self):
         def func(): ps.COLLECTORS[self.collector_name] = object()
+        ps._collector_lock.acquire()
         t = Thread(target=hold_lock, args=(ps._collector_lock, 0.1, func))
         t.start()
 
@@ -175,7 +176,7 @@ class TestCollector(unittest.TestCase):
         proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
         collector.blacklist_proxy(proxy)
 
-        self.assertEqual(proxy, collector._blacklist.pop())
+        self.assertEqual((proxy[0], proxy[1]), collector._blacklist.pop())
 
     def test_blacklist_proxy_multiple(self):
         collector = ps.Collector('http', 10, None)
@@ -187,7 +188,18 @@ class TestCollector(unittest.TestCase):
         collector.blacklist_proxy(proxies)
 
         for proxy in proxies:
-            self.assertIn(proxy, collector._blacklist)
+            self.assertIn((proxy[0], proxy[1]), collector._blacklist)
+
+    def test_blacklist_proxy_exception_if_invalid_parameters(self):
+        collector = ps.Collector('http', 10, None)
+        with self.assertRaises(ValueError):
+            collector.blacklist_proxy()
+
+    def test_blacklist_proxy_single_with_host_and_port(self):
+        collector = ps.Collector('http', 10, None)
+        collector.blacklist_proxy(host='host', port='port')
+
+        self.assertEqual(('host', 'port'), collector._blacklist.pop())
 
     def test_clear_blacklist_clears_correctly(self):
         collector = ps.Collector('http', 10, None)
@@ -278,6 +290,51 @@ class TestCollector(unittest.TestCase):
         store_mock.update_store.assert_not_called()
         store_mock.get_proxy.assert_called_once_with({'type': {'http', }}, collector._blacklist)
         self.assertIsNone(actual)
+
+    def test_remove_blacklist_single(self):
+        collector = ps.Collector('http', 10, None)
+        proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        collector.blacklist_proxy(proxy)
+        collector.remove_blacklist(proxy)
+
+        self.assertEqual(0, len(collector._blacklist))
+
+    def test_remove_blacklist_multiple(self):
+        collector = ps.Collector('http', 10, None)
+        proxies = {
+            Proxy('host1', 'port', 'code', 'country', 'anonymous', 'type', 'source'),
+            Proxy('host2', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        }
+
+        collector.blacklist_proxy(proxies)
+        collector.remove_blacklist(proxies)
+
+        self.assertEqual(0, len(collector._blacklist))
+
+    def test_remove_blacklist_exception_if_invalid_parameters(self):
+        collector = ps.Collector('http', 10, None)
+        with self.assertRaises(ValueError):
+            collector.remove_blacklist()
+
+    def test_remove_blacklist_single_with_host_and_port(self):
+        collector = ps.Collector('http', 10, None)
+        proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        collector.blacklist_proxy(proxy)
+        collector.remove_blacklist(host='host', port='port')
+
+        self.assertEqual(0, len(collector._blacklist))
+
+    def test_remove_blacklist_removes_correct_proxy(self):
+        collector = ps.Collector('http', 10, None)
+        proxy1 = Proxy('host1', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        proxy2 = Proxy('host2', 'port', 'code', 'country', 'anonymous', 'type', 'source')
+        proxies = {proxy1, proxy2}
+
+        collector.blacklist_proxy(proxies)
+        collector.remove_blacklist(proxy1)
+
+        self.assertEqual(1, len(collector._blacklist))
+        self.assertIn((proxy2[0], proxy2[1]), collector._blacklist)
 
     def test_remove_proxy_does_nothing_if_none(self):
         store_mock = Mock()

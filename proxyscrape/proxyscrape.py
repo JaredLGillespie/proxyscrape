@@ -107,7 +107,6 @@ def get_collector(name):
 class Collector:
     """A proxy collector for retrieving proxies.
 
-
     :param resource_types:
         (optional) The resource types to to scrape. Can either be a single or sequence of resource types. Either
         `resource_types` or `resources` should be defined (but not necessarily both).
@@ -186,7 +185,6 @@ class Collector:
             return {resources, }
 
     def _refresh_resources(self, force):
-        # TODO: Need to do asynchronously + concurrently
         for resource in self._resource_map.values():
             refreshed, proxies = resource['proxy-resource'].refresh(force)
 
@@ -246,18 +244,32 @@ class Collector:
         self._validate_filter_opts(filter_opts)
         self._extend_filter(self._filter_opts, filter_opts)
 
-    def blacklist_proxy(self, proxies):
+    def blacklist_proxy(self, proxies=None, host=None, port=None):
         """Blacklists a specific a proxy from being retrieved.
 
-        Blacklitse
+        Either a single or sequence of proxies should be given, or a host and port number combination.
 
         :param proxies:
-            A single or sequence of proxies to blacklist.
-        :type proxies: Proxy or iterable
+            (optional) A single or sequence of proxies to blacklist.
+        :param host:
+            (optional) The host IP of the proxy.
+        :param port:
+            (optional) The port number of the proxy.
+        :type proxies: Proxy or iterable or None
+        :type host: str or None
+        :type port: str or None
+        :raises ValueError:
+            If neither proxies nor host and port are given.
         """
-        if not is_iterable(proxies):
-            proxies = {proxies, }
-        proxies = set(proxies)
+        if proxies is None and None in (host, port):
+            raise ValueError('Either proxies or host and port should be given')
+
+        if proxies is None:
+            proxies = {(host, port), }
+        elif not is_iterable(proxies):
+            proxies = {(proxies[0], proxies[1]), }
+        else:
+            proxies = {(p[0], p[1]) for p in proxies}
 
         self._blacklist.update(proxies)
 
@@ -298,6 +310,35 @@ class Collector:
         self._refresh_resources(False)
         return self._store.get_proxy(combined_filter_opts, self._blacklist)
 
+    def remove_blacklist(self, proxies=None, host=None, port=None):
+        """Removes proxies from the blacklist.
+
+        Either a single or sequence of proxies should be given, or a host and port number combination.
+
+        :param proxies:
+            (optional) A single or sequence of proxies to blacklist.
+        :param host:
+            (optional) The host IP of the proxy.
+        :param port:
+            (optional) The port number of the proxy.
+        :type proxies: Proxy or iterable or None
+        :type host: str or None
+        :type port: str or None
+        :raises ValueError:
+            If neither proxies nor host and port are given.
+        """
+        if proxies is None and None in (host, port):
+            raise ValueError('Either proxies or host and port should be given')
+
+        if proxies is None:
+            proxies = {(host, port), }
+        elif not is_iterable(proxies):
+            proxies = {(proxies[0], proxies[1]), }
+        else:
+            proxies = {(p[0], p[1]) for p in proxies}
+
+        self._blacklist.difference_update(proxies)
+
     def remove_proxy(self, proxies):
         """Removes a proxy from the internal store.
 
@@ -316,6 +357,8 @@ class Collector:
 
         if not is_iterable(proxies):
             proxies = {proxies, }
+        else:
+            proxies = set(proxies)
 
         for proxy in proxies:
             resource_type = proxy.source

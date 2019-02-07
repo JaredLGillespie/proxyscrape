@@ -70,7 +70,7 @@ class TestStores(unittest.TestCase):
         proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
 
         store.update_store(id, {proxy, })
-        actual = store.get_proxy(blacklist={proxy, })
+        actual = store.get_proxy(blacklist={(proxy[0], proxy[1]), })
 
         self.assertIsNone(actual)
 
@@ -81,7 +81,7 @@ class TestStores(unittest.TestCase):
 
         store.update_store(id, {proxy, })
         actual = store.get_proxy(filter_opts={'country': {'uk', }},
-                                 blacklist={proxy, })
+                                 blacklist={(proxy[0], proxy[1]), })
 
         self.assertIsNone(actual)
 
@@ -92,7 +92,7 @@ class TestStores(unittest.TestCase):
 
         store.update_store(id, {proxy, })
         actual = store.get_proxy(filter_opts={'code': {'us', }},
-                                 blacklist={proxy, })
+                                 blacklist={(proxy[0], proxy[1]), })
 
         self.assertIsNone(actual)
 

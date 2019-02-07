@@ -48,14 +48,14 @@ class Store:
         if not filter_opts:
             if not blacklist:
                 return proxies
-            return proxies.difference(blacklist)
+            return [p for p in proxies if (p[0], p[1]) not in blacklist]
 
         def filter_func(proxy):
             for attr, values in filter_opts.items():
                 if getattr(proxy, attr, None) not in values:
                     return False
 
-            if blacklist and proxy in blacklist:
+            if blacklist and (proxy[0], proxy[1]) in blacklist:
                 return False
 
             return True
@@ -80,6 +80,8 @@ class Store:
             (optional) Options to filter the proxies by.
         :param blacklist:
             (optional) Specific proxies to not retrieve.
+        :type filter_opts: dict or None
+        :type blacklist: set
         :return:
             A single proxy matching the given filters.
         :rtype: Proxy or None

@@ -147,8 +147,9 @@ filter is expected for any proxy retrieved.
 Note that some filters may instead use specific resources to achieve the same results (i.e. 'us-proxy' or 'uk-proxy' for
 'us' and 'uk' proxies).
 
-Blacklists can be applied to a collector to prevent specific proxies from being retrieved. They accept one or more Proxy
-objects and won't allow retrieval of matching proxies.
+Blacklists can be applied to a collector to prevent specific proxies from being retrieved. They accept either one or more Proxy
+objects, or a host + port number combination and won't allow retrieval of matching proxies. Proxies can be individually removed
+from blacklists or the entire blacklist can be cleared.
 
 .. code-block:: python
 
@@ -158,12 +159,17 @@ objects and won't allow retrieval of matching proxies.
 
     # Add proxy to blacklist
     collector.blacklist_proxy(Proxy('192.168.1.1', '80', None, None, None, 'http', 'my-resource'))
+    collector.blacklist_proxy(host='192.168.1.2', port='8080')
 
     # Blacklisted proxies won't be included
     proxy = get_proxy()
 
+    # Remove individual proxies)
+    collector.remove_blacklist(host='192.168.1.1', port='80')
+
     # Clear blacklist
     collector.clear_blacklist()
+
 
 Instead of permanently blacklisting a particular proxies, a proxy can instead be removed from internal memory. This
 allows it to be re-added to the pool upon a subsequent refresh.
