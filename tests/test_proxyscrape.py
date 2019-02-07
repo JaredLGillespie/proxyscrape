@@ -47,9 +47,9 @@ from proxyscrape.shared import Proxy
 
 
 def hold_lock(lock, hold_time, func):
-    with lock:
-        time.sleep(hold_time)
-        func()
+    time.sleep(hold_time)
+    func()
+    lock.release()
 
 
 def get_random_collector_name(self):
@@ -70,6 +70,7 @@ class TestProxyScrape(unittest.TestCase):
 
     def test_create_collection_exception_if_duplicate_lock_check(self):
         def func(): ps.COLLECTORS[self.collector_name] = object()
+        ps._collector_lock.acquire()
         t = Thread(target=hold_lock, args=(ps._collector_lock, 0.1, func))
         t.start()
 
