@@ -9,6 +9,9 @@ The format is based on `Keep a Changelog`_ and this project adheres to `Semantic
 
 `Unreleased`_
 -------------
+
+`0.2.0`_ - 2019-02-07
+---------------------
 Added
 ^^^^^
 - Integration with proxyscrape.com
@@ -30,6 +33,7 @@ Added
 ^^^^^
 - Initial Version
 
-.. _Unreleased: https://github.com/JaredLGillespie/proxyscrape/compare/v0.1.1...HEAD
+.. _Unreleased: https://github.com/JaredLGillespie/proxyscrape/compare/v0.2.0...HEAD
+.. _0.2.0: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.2.0
 .. _0.1.1: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.1.1
 .. _0.1.0: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.1.0
