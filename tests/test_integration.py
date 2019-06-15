@@ -42,7 +42,7 @@ RESOURCE_MAP_COPY = pss.RESOURCE_MAP.copy()
 
 class TestIntegrationProxyScrape(unittest.TestCase):
     def setUp(self):
-        self.requests_patcher = patch('proxyscrape.integration.requests')
+        self.requests_patcher = patch('proxyscrape.shared.requests')
         self.requests = self.requests_patcher.start()
 
         # Revert constants to defaults before each test

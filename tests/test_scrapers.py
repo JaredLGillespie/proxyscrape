@@ -139,7 +139,7 @@ class TestProxyResource(unittest.TestCase):
 
 class TestScrapers(unittest.TestCase):
     def setUp(self):
-        self.requests_patcher = patch('proxyscrape.scrapers.requests')
+        self.requests_patcher = patch('proxyscrape.shared.requests')
         self.requests = self.requests_patcher.start()
 
     def tearDown(self):
@@ -170,6 +170,21 @@ class TestScrapers(unittest.TestCase):
         response = Mock()
         response.ok = False
         self.requests.get = lambda url: response
+
+        func = RESOURCE_MAP['anonymous-proxy']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
+    def test_anonymous_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
 
         func = RESOURCE_MAP['anonymous-proxy']
         pr = ProxyResource(func, 10)
@@ -228,6 +243,21 @@ class TestScrapers(unittest.TestCase):
         self.assertEqual(False, refreshed)
         self.assertIsNone(proxies)
 
+    def test_free_proxy_list_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
+
+        func = RESOURCE_MAP['free-proxy-list']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
     def test_free_proxy_list_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
@@ -268,6 +298,21 @@ class TestScrapers(unittest.TestCase):
         response = Mock()
         response.ok = False
         self.requests.get = lambda url: response
+
+        func = RESOURCE_MAP['proxy-daily-http']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
+    def test_proxy_daily_http_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
 
         func = RESOURCE_MAP['proxy-daily-http']
         pr = ProxyResource(func, 10)
@@ -326,6 +371,21 @@ class TestScrapers(unittest.TestCase):
         self.assertEqual(False, refreshed)
         self.assertIsNone(proxies)
 
+    def test_proxy_daily_socks4_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
+
+        func = RESOURCE_MAP['proxy-daily-socks4']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
     def test_proxy_daily_socks4_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
@@ -366,6 +426,21 @@ class TestScrapers(unittest.TestCase):
         response = Mock()
         response.ok = False
         self.requests.get = lambda url: response
+
+        func = RESOURCE_MAP['proxy-daily-socks5']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
+    def test_proxy_daily_socks5_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
 
         func = RESOURCE_MAP['proxy-daily-socks5']
         pr = ProxyResource(func, 10)
@@ -424,6 +499,21 @@ class TestScrapers(unittest.TestCase):
         self.assertEqual(False, refreshed)
         self.assertIsNone(proxies)
 
+    def test_socks_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
+
+        func = RESOURCE_MAP['socks-proxy']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
     def test_socks_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
@@ -464,6 +554,21 @@ class TestScrapers(unittest.TestCase):
         response = Mock()
         response.ok = False
         self.requests.get = lambda url: response
+
+        func = RESOURCE_MAP['ssl-proxy']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
+    def test_ssl_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
 
         func = RESOURCE_MAP['ssl-proxy']
         pr = ProxyResource(func, 10)
@@ -522,6 +627,21 @@ class TestScrapers(unittest.TestCase):
         self.assertEqual(False, refreshed)
         self.assertIsNone(proxies)
 
+    def test_uk_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
+
+        func = RESOURCE_MAP['uk-proxy']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
     def test_uk_proxies_invalid_html(self):
         with open(os.path.join(cwd, 'mock_pages', 'empty.html'), 'r') as html:
             response = Mock()
@@ -562,6 +682,21 @@ class TestScrapers(unittest.TestCase):
         response = Mock()
         response.ok = False
         self.requests.get = lambda url: response
+
+        func = RESOURCE_MAP['us-proxy']
+        pr = ProxyResource(func, 10)
+
+        refreshed, proxies = pr.refresh()
+
+        self.assertEqual(False, refreshed)
+        self.assertIsNone(proxies)
+
+    def test_us_proxies_request_exception(self):
+        def raise_exception(url):
+            raise self.requests.RequestException()
+
+        self.requests.RequestException = Exception
+        self.requests.get = raise_exception
 
         func = RESOURCE_MAP['us-proxy']
         pr = ProxyResource(func, 10)
