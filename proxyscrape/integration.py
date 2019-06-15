@@ -92,7 +92,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
                      'anonymity=%s' % anonymity,
                      'country=%s' % country])
 
-    url = 'https://www.proxyscrape.com/api/?request=getproxies' + \
+    url = 'https://api.proxyscrape.com?request=getproxies' + \
           '&proxytype=%s' % proxytype + \
           '&timeout=%s' % timeout + \
           '&ssl=%s' % ssl + \
