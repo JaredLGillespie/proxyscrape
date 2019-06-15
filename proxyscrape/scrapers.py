@@ -26,7 +26,6 @@ __all__ = ['add_resource', 'add_resource_type', 'get_resources', 'get_resource_t
 
 from bs4 import BeautifulSoup
 from threading import Lock
-import requests
 import time
 
 from .errors import (
@@ -40,7 +39,8 @@ from .errors import (
 )
 from .shared import (
     is_iterable,
-    Proxy
+    Proxy,
+    request_proxy_list
 )
 _resource_lock = Lock()
 _resource_type_lock = Lock()
@@ -89,17 +89,6 @@ class ProxyResource:
                     pass
 
         return False, None
-
-
-def request_proxy_list(url):
-    try:
-        response = requests.get(url)
-    except requests.exceptions.RequestException:
-        raise RequestFailedError()
-
-    if not response.ok:
-        raise RequestNotOKError()
-    return response
 
 
 def get_anonymous_proxies():

@@ -54,11 +54,11 @@ class RequestNotOKError(ProxyScrapeBaseException):
 
 
 class RequestFailedError(ProxyScrapeBaseException):
-    """Request Error."""
+    """Request Failed Error."""
 
 
 class ResourceAlreadyDefinedError(ProxyScrapeBaseException):
-    """Collector Not Found Error."""
+    """Resource Already Defined Error."""
 
 
 class ResourceTypeAlreadyDefinedError(ProxyScrapeBaseException):

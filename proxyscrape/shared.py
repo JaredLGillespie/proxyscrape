@@ -21,13 +21,30 @@
 # SOFTWARE.
 
 
-__all__ = ['is_iterable', 'Proxy']
+__all__ = ['is_iterable', 'Proxy', 'request_proxy_list']
 
 
 from collections import namedtuple
 
+import requests
+
+from .errors import (
+    RequestFailedError,
+    RequestNotOKError
+)
 
 Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'type', 'source'])
+
+
+def request_proxy_list(url):
+    try:
+        response = requests.get(url)
+    except requests.RequestException:
+        raise RequestFailedError()
+
+    if not response.ok:
+        raise RequestNotOKError()
+    return response
 
 
 def is_iterable(obj):

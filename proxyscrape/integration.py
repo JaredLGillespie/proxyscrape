@@ -24,16 +24,16 @@
 __all__ = ['get_proxyscrape_resource']
 
 
-import requests
-
 from .errors import (
     InvalidHTMLError,
     InvalidResourceTypeError,
-    RequestNotOKError,
     ResourceAlreadyDefinedError
 )
 from .scrapers import add_resource
-from .shared import Proxy
+from .shared import (
+    Proxy,
+    request_proxy_list
+)
 
 
 def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymity='all', country='all'):
@@ -100,9 +100,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
           '&country=%s' % country
 
     def func():
-        response = requests.get(url)
-        if not response.ok:
-            raise RequestNotOKError()
+        response = request_proxy_list(url)
 
         try:
             proxies = set()
