@@ -26,7 +26,6 @@ __all__ = ['add_resource', 'add_resource_type', 'get_resources', 'get_resource_t
 
 from bs4 import BeautifulSoup
 from threading import Lock
-import requests
 import time
 
 from .errors import (
@@ -34,12 +33,14 @@ from .errors import (
     InvalidResourceError,
     InvalidResourceTypeError,
     RequestNotOKError,
+    RequestFailedError,
     ResourceAlreadyDefinedError,
     ResourceTypeAlreadyDefinedError
 )
 from .shared import (
     is_iterable,
-    Proxy
+    Proxy,
+    request_proxy_list
 )
 _resource_lock = Lock()
 _resource_type_lock = Lock()
@@ -84,7 +85,7 @@ class ProxyResource:
                     proxies = self._func()
                     self._last_refresh_time = time.time()
                     return True, proxies
-                except (InvalidHTMLError, RequestNotOKError):
+                except (InvalidHTMLError, RequestNotOKError, RequestFailedError):
                     pass
 
         return False, None
@@ -92,9 +93,7 @@ class ProxyResource:
 
 def get_anonymous_proxies():
     url = 'https://free-proxy-list.net/anonymous-proxy.html'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -119,9 +118,7 @@ def get_anonymous_proxies():
 
 def get_free_proxy_list_proxies():
     url = 'http://www.free-proxy-list.net'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -162,9 +159,7 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
 
 def get_proxy_daily_http_proxies():
     url = 'http://www.proxy-daily.com'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -177,9 +172,7 @@ def get_proxy_daily_http_proxies():
 
 def get_proxy_daily_socks4_proxies():
     url = 'http://www.proxy-daily.com'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -192,9 +185,7 @@ def get_proxy_daily_socks4_proxies():
 
 def get_proxy_daily_socks5_proxies():
     url = 'http://www.proxy-daily.com'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -207,9 +198,7 @@ def get_proxy_daily_socks5_proxies():
 
 def get_socks_proxies():
     url = 'https://www.socks-proxy.net'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -234,9 +223,7 @@ def get_socks_proxies():
 
 def get_ssl_proxies():
     url = 'https://www.sslproxies.org/'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -260,9 +247,7 @@ def get_ssl_proxies():
 
 def get_uk_proxies():
     url = 'https://free-proxy-list.net/uk-proxy.html'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -287,9 +272,7 @@ def get_uk_proxies():
 
 def get_us_proxies():
     url = 'https://www.us-proxy.org'
-    response = requests.get(url)
-    if not response.ok:
-        raise RequestNotOKError()
+    response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
