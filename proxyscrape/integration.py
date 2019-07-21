@@ -68,7 +68,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
     proxytype = proxytype.lower()
     ssl = ssl.lower()
     anonymity = anonymity.lower()
-    country = country.lower()
+    country = country.upper()
 
     if proxytype not in {'http', 'socks4', 'socks5', 'all'}:
         raise ValueError('proxytype %s is not valid' % proxytype)
