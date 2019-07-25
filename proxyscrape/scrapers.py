@@ -174,7 +174,7 @@ def get_proxy_daily_socks4_proxies():
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
         content = soup.find('div', {'id': 'free-proxy-list'})
-        centers = content.find_all('center')
+        centers = content.find_all('div', {'class': 'centeredProxyList freeProxyStyle'})
         return _get_proxy_daily_proxies_parse_inner(centers[1], 'socks4', 'proxy-daily-socks4')
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
@@ -189,7 +189,7 @@ def get_proxy_daily_socks5_proxies():
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
         content = soup.find('div', {'id': 'free-proxy-list'})
-        centers = content.find_all('center')
+        centers = content.find_all('div', {'class': 'centeredProxyList freeProxyStyle'})
         return _get_proxy_daily_proxies_parse_inner(centers[2], 'socks5', 'proxy-daily-socks5')
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
