@@ -140,9 +140,8 @@ def get_free_proxy_list_proxies():
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
 
-
 def _get_proxy_daily_proxies_parse_inner(element, type, source):
-    content = element.find('div').text
+    content = element.contents[0]
     rows = content.replace('"', '').replace("'", '').split('\n')
 
     proxies = set()
@@ -156,45 +155,28 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
         proxies.add(Proxy(*params))
     return proxies
 
+def get_proxy_daily_data_elements():
+    url = 'http://www.proxy-daily.com'
+    response = request_proxy_list(url)
+
+    try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        content = soup.find('div', {'id': 'free-proxy-list'})
+        return content.find_all(class_="freeProxyStyle")
+    except (AttributeError, KeyError):
+        raise InvalidHTMLError()
 
 def get_proxy_daily_http_proxies():
-    url = 'http://www.proxy-daily.com'
-    response = request_proxy_list(url)
-
-    try:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        content = soup.find('div', {'id': 'free-proxy-list'})
-        centers = content.find_all('center')
-        return _get_proxy_daily_proxies_parse_inner(centers[0], 'http', 'proxy-daily-http')
-    except (AttributeError, KeyError):
-        raise InvalidHTMLError()
-
+    http_data_element = get_proxy_daily_data_elements()[0]
+    return _get_proxy_daily_proxies_parse_inner(http_data_element, 'http', 'proxy-daily-http')
 
 def get_proxy_daily_socks4_proxies():
-    url = 'http://www.proxy-daily.com'
-    response = request_proxy_list(url)
-
-    try:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        content = soup.find('div', {'id': 'free-proxy-list'})
-        centers = content.find_all('center')
-        return _get_proxy_daily_proxies_parse_inner(centers[1], 'socks4', 'proxy-daily-socks4')
-    except (AttributeError, KeyError):
-        raise InvalidHTMLError()
-
+    socks4_data_element = get_proxy_daily_data_elements()[1]
+    return _get_proxy_daily_proxies_parse_inner(socks4_data_element, 'socks4', 'proxy-daily-http')
 
 def get_proxy_daily_socks5_proxies():
-    url = 'http://www.proxy-daily.com'
-    response = request_proxy_list(url)
-
-    try:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        content = soup.find('div', {'id': 'free-proxy-list'})
-        centers = content.find_all('center')
-        return _get_proxy_daily_proxies_parse_inner(centers[2], 'socks5', 'proxy-daily-socks5')
-    except (AttributeError, KeyError):
-        raise InvalidHTMLError()
-
+    socks5_data_element = get_proxy_daily_data_elements()[2]
+    return _get_proxy_daily_proxies_parse_inner(socks5_data_element, 'socks5', 'proxy-daily-http')
 
 def get_socks_proxies():
     url = 'https://www.socks-proxy.net'
