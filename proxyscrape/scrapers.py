@@ -136,9 +136,8 @@ def get_free_proxy_list_proxies():
 
 
 def _get_proxy_daily_proxies_parse_inner(element, type, source):
-    content = element.find('div').text
+    content = element.text
     rows = content.replace('"', '').replace("'", '').split('\n')
-
     proxies = set()
     for row in rows:
         row = row.strip()
@@ -160,7 +159,7 @@ def get_proxy_daily_http_proxies():
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
         content = soup.find('div', {'id': 'free-proxy-list'})
-        centers = content.find_all('center')
+        centers = content.find_all('div', {'class': 'centeredProxyList freeProxyStyle'})
         return _get_proxy_daily_proxies_parse_inner(centers[0], 'http', 'proxy-daily-http')
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
