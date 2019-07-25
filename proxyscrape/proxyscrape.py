@@ -310,6 +310,32 @@ class Collector:
         self._refresh_resources(False)
         return self._store.get_proxy(combined_filter_opts, self._blacklist)
 
+    def get_proxies(self, filter_opts=None):
+        """Retrieves proxies.
+
+        All proxies retrieved are from the internal store. If `refreshed` is True and proxies haven't been retrieved
+        within the collector's `refresh_interval`, they are refreshed by clearing the internal store and retrieving new
+        proxies.
+
+        :param filter_opts:
+            (optional) Options to filter proxies retrieved by collector.
+        :type filter_opts: dict or None
+        :return:
+            The retrieved proxy or None if no proxy found (either because none exist in internal store or filter_opts
+            none matched filter_opts).
+        :rtype: Proxy or None
+        :raises InvalidFilterOptionError:
+            If `filter_opts` is not a dictionary or defines an invalid filter.
+        """
+        self._validate_filter_opts(filter_opts)
+
+        combined_filter_opts = dict()
+        self._extend_filter(combined_filter_opts, self._filter_opts)
+        self._extend_filter(combined_filter_opts, filter_opts)
+
+        self._refresh_resources(False)
+        return self._store.get_proxies(combined_filter_opts, self._blacklist)
+
     def remove_blacklist(self, proxies=None, host=None, port=None):
         """Removes proxies from the blacklist.
 
