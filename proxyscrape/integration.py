@@ -68,7 +68,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
     proxytype = proxytype.lower()
     ssl = ssl.lower()
     anonymity = anonymity.lower()
-    country = country.lower()
+    country = country.upper()
 
     if proxytype not in {'http', 'socks4', 'socks5', 'all'}:
         raise ValueError('proxytype %s is not valid' % proxytype)
@@ -82,7 +82,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
     if anonymity not in {'elite', 'anonymous', 'transparent', 'all'}:
         raise ValueError('anonymity %s is not valid' % anonymity)
 
-    if len(country) != 2 and country != 'all':
+    if len(country) != 2 and country != 'ALL':
         raise ValueError('country %s is not valid' % country)
 
     name = '|'.join(['proxyscrape',
@@ -104,7 +104,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
 
         try:
             proxies = set()
-            code = None if country == 'all' else country
+            code = None if country.lower() == 'all' else country
             anonymous = anonymity in {'elite', 'anonymous'}
             type = None if proxytype == 'all' else proxytype
 
