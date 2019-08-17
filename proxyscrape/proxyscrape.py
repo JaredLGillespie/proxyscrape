@@ -295,8 +295,8 @@ class Collector:
             (optional) Options to filter proxies retrieved by collector.
         :type filter_opts: dict or None
         :return:
-            The retrieved proxy or None if no proxy found (either because none exist in internal store or filter_opts
-            none matched filter_opts).
+            The retrieved proxy or None if no proxy found (either because none exist in internal store or none matched
+             filter_opts).
         :rtype: Proxy or None
         :raises InvalidFilterOptionError:
             If `filter_opts` is not a dictionary or defines an invalid filter.
@@ -308,6 +308,7 @@ class Collector:
         self._extend_filter(combined_filter_opts, filter_opts)
 
         self._refresh_resources(False)
+
         return self._store.get_proxy(combined_filter_opts, self._blacklist)
 
     def get_proxies(self, filter_opts=None):
@@ -321,9 +322,9 @@ class Collector:
             (optional) Options to filter proxies retrieved by collector.
         :type filter_opts: dict or None
         :return:
-            The retrieved proxy or None if no proxy found (either because none exist in internal store or filter_opts
-            none matched filter_opts).
-        :rtype: Proxy or None
+            The retrieved proxies or None if no proxy found (either because none exist in internal store or none matched
+            filter_opts).
+        :rtype: List of Proxy or None
         :raises InvalidFilterOptionError:
             If `filter_opts` is not a dictionary or defines an invalid filter.
         """

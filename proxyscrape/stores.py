@@ -100,8 +100,8 @@ class Store:
         :type filter_opts: dict or None
         :type blacklist: set
         :return:
-            A single proxy matching the given filters.
-        :rtype: Proxy or None
+            All proxies matching the given filters.
+        :rtype: List of Proxy or None
         """
         proxies = set()
         for store in self._stores.values():
