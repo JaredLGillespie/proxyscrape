@@ -88,6 +88,9 @@ class Store:
         """
         filtered_proxies = self.get_proxies(filter_opts=filter_opts, blacklist=blacklist)
 
+        if filtered_proxies is None:
+            return None
+
         return random.sample(filtered_proxies, 1)[0]
 
     def get_proxies(self, filter_opts=None, blacklist=None):
@@ -117,7 +120,7 @@ class Store:
         if not filtered_proxies:
             return None
 
-        return filtered_proxies
+        return list(filtered_proxies)
 
     def remove_proxy(self, id, proxy):
         """Removes a proxy from the internal store.
