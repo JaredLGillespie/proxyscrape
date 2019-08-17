@@ -151,7 +151,7 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
         if len(row) == 0:
             continue
 
-        params = row.split(':')
+        params = str(row).split(':')
         params.extend([None, None, None, type, source])
         proxies.add(Proxy(*params))
     return proxies
@@ -176,12 +176,12 @@ def get_proxy_daily_http_proxies():
 
 def get_proxy_daily_socks4_proxies():
     socks4_data_element = get_proxy_daily_data_elements()[1]
-    return _get_proxy_daily_proxies_parse_inner(socks4_data_element, 'socks4', 'proxy-daily-http')
+    return _get_proxy_daily_proxies_parse_inner(socks4_data_element, 'socks4', 'proxy-daily-socks4')
 
 
 def get_proxy_daily_socks5_proxies():
     socks5_data_element = get_proxy_daily_data_elements()[2]
-    return _get_proxy_daily_proxies_parse_inner(socks5_data_element, 'socks5', 'proxy-daily-http')
+    return _get_proxy_daily_proxies_parse_inner(socks5_data_element, 'socks5', 'proxy-daily-socks5')
 
 
 def get_socks_proxies():
