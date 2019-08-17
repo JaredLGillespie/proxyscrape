@@ -140,6 +140,7 @@ def get_free_proxy_list_proxies():
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
 
+
 def _get_proxy_daily_proxies_parse_inner(element, type, source):
     content = element.contents[0]
     rows = content.replace('"', '').replace("'", '').split('\n')
@@ -155,6 +156,7 @@ def _get_proxy_daily_proxies_parse_inner(element, type, source):
         proxies.add(Proxy(*params))
     return proxies
 
+
 def get_proxy_daily_data_elements():
     url = 'http://www.proxy-daily.com'
     response = request_proxy_list(url)
@@ -166,17 +168,21 @@ def get_proxy_daily_data_elements():
     except (AttributeError, KeyError):
         raise InvalidHTMLError()
 
+
 def get_proxy_daily_http_proxies():
     http_data_element = get_proxy_daily_data_elements()[0]
     return _get_proxy_daily_proxies_parse_inner(http_data_element, 'http', 'proxy-daily-http')
+
 
 def get_proxy_daily_socks4_proxies():
     socks4_data_element = get_proxy_daily_data_elements()[1]
     return _get_proxy_daily_proxies_parse_inner(socks4_data_element, 'socks4', 'proxy-daily-http')
 
+
 def get_proxy_daily_socks5_proxies():
     socks5_data_element = get_proxy_daily_data_elements()[2]
     return _get_proxy_daily_proxies_parse_inner(socks5_data_element, 'socks5', 'proxy-daily-http')
+
 
 def get_socks_proxies():
     url = 'https://www.socks-proxy.net'
