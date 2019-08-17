@@ -103,7 +103,7 @@ resource type should be utilized. Filters can then be applied to the proxies if 
 When given one or more resources, the collector will use those to retrieve proxies. If one or more resource types
 are given, the resources for each of the types will be used to retrieve proxies.
 
-Once created, proxies can be retrieved via the `get_proxy(...)` function. This optionally takes a `filter_opts`
+Once created, proxies can be retrieved via the `get_proxy(...)` or the `get_proxies(...)` function. This optionally takes a `filter_opts`
 parameter which can filter by the following:
 
 - ``code`` (us, ca, ...)
@@ -125,6 +125,9 @@ parameter which can filter by the following:
 
     # Retrieve only anonymous 'uk' or 'us' proxies
     proxy = collector.get_proxy({'code': ('us', 'uk'), 'anonymous': True})
+
+    # Retrieve all 'ca' proxies
+    proxies = collector.get_proxies({'code': 'ca'})
 
 Filters can be applied to every proxy retrieval from the collector via `apply_filter(...)`. This is useful when the same
 filter is expected for any proxy retrieved.
@@ -164,7 +167,7 @@ from blacklists or the entire blacklist can be cleared.
     # Blacklisted proxies won't be included
     proxy = get_proxy()
 
-    # Remove individual proxies)
+    # Remove individual proxies
     collector.remove_blacklist(host='192.168.1.1', port='80')
 
     # Clear blacklist
