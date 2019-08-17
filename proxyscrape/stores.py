@@ -86,6 +86,26 @@ class Store:
             A single proxy matching the given filters.
         :rtype: Proxy or None
         """
+        filtered_proxies = self.get_proxies(filter_opts=filter_opts, blacklist=blacklist)
+
+        if filtered_proxies is None:
+            return None
+
+        return random.sample(filtered_proxies, 1)[0]
+
+    def get_proxies(self, filter_opts=None, blacklist=None):
+        """Retrieves all proxies.
+
+        :param filter_opts:
+            (optional) Options to filter the proxies by.
+        :param blacklist:
+            (optional) Specific proxies to not retrieve.
+        :type filter_opts: dict or None
+        :type blacklist: set
+        :return:
+            All proxies matching the given filters.
+        :rtype: List of Proxy or None
+        """
         proxies = set()
         for store in self._stores.values():
             proxies.update(store)
@@ -100,7 +120,7 @@ class Store:
         if not filtered_proxies:
             return None
 
-        return random.sample(filtered_proxies, 1)[0]
+        return list(filtered_proxies)
 
     def remove_proxy(self, id, proxy):
         """Removes a proxy from the internal store.
