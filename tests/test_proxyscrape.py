@@ -291,6 +291,79 @@ class TestCollector(unittest.TestCase):
         store_mock.get_proxy.assert_called_once_with({'type': {'http', }}, collector._blacklist)
         self.assertIsNone(actual)
 
+    def test_get_proxies_no_filter(self):
+        proxy1 = Proxy('host1', 'port1', 'code', 'country', 'anonymous', 'type', 'source')
+        proxy2 = Proxy('host2', 'por2', 'code', 'country', 'anonymous', 'type', 'source')
+        proxies = {proxy1, proxy2}
+
+        store_mock = Mock()
+        store_mock.return_value = store_mock  # Ensure same instance when initialized
+        store_mock.get_proxies.return_value = [proxy1, proxy2]
+
+        proxy_resource_mock = Mock()
+        proxy_resource_mock.return_value = proxy_resource_mock  # Ensure same instance when initialized
+        proxy_resource_mock.refresh.return_value = True, proxies
+
+        ps.Store = store_mock
+        ps.ProxyResource = proxy_resource_mock
+
+        collector = ps.Collector('http', 10, None)
+        actual = collector.get_proxies()
+
+        for _, attrs in collector._resource_map.items():
+            store_mock.update_store.assert_called_with(attrs['id'], proxies)
+
+        store_mock.get_proxies.assert_called_once_with({'type': {'http', }}, collector._blacklist)
+
+        for proxy in proxies:
+            self.assertIn(proxy, actual)
+
+    def test_get_proxies_with_filter(self):
+        proxy1 = Proxy('host1', 'port1', 'code', 'country', 'anonymous', 'type', 'source')
+        proxy2 = Proxy('host2', 'por2', 'code', 'country', 'anonymous', 'type', 'source')
+        proxies = {proxy1, proxy2}
+
+        store_mock = Mock()
+        store_mock.return_value = store_mock  # Ensure same instance when initialized
+        store_mock.get_proxies.return_value = [proxy1, proxy2]
+
+        proxy_resource_mock = Mock()
+        proxy_resource_mock.return_value = proxy_resource_mock  # Ensure same instance when initialized
+        proxy_resource_mock.refresh.return_value = True, proxies
+
+        ps.Store = store_mock
+        ps.ProxyResource = proxy_resource_mock
+
+        collector = ps.Collector('http', 10, None)
+        actual = collector.get_proxies({'code': 'us'})
+
+        for _, attrs in collector._resource_map.items():
+            store_mock.update_store.assert_called_with(attrs['id'], proxies)
+
+        store_mock.get_proxies.assert_called_once_with({'type': {'http', }, 'code': {'us', }}, collector._blacklist)
+
+        for proxy in proxies:
+            self.assertIn(proxy, actual)
+
+    def test_get_proxies_doesnt_update_store_if_not_refreshed(self):
+        store_mock = Mock()
+        store_mock.return_value = store_mock  # Ensure same instance when initialized
+        store_mock.get_proxies.return_value = None
+
+        proxy_resource_mock = Mock()
+        proxy_resource_mock.return_value = proxy_resource_mock  # Ensure same instance when initialized
+        proxy_resource_mock.refresh.return_value = False, None
+
+        ps.Store = store_mock
+        ps.ProxyResource = proxy_resource_mock
+
+        collector = ps.Collector('http', 10, None)
+        actual = collector.get_proxies()
+
+        store_mock.update_store.assert_not_called()
+        store_mock.get_proxies.assert_called_once_with({'type': {'http', }}, collector._blacklist)
+        self.assertIsNone(actual)
+
     def test_remove_blacklist_single(self):
         collector = ps.Collector('http', 10, None)
         proxy = Proxy('host', 'port', 'code', 'country', 'anonymous', 'type', 'source')

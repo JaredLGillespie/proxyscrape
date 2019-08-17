@@ -104,7 +104,80 @@ class TestStores(unittest.TestCase):
         store.update_store(id, {expected, })
         actual = store.get_proxy()
 
-        self.assertEqual(expected, actual)
+        self.assertEqual(actual, expected)
+
+    def test_get_proxies_returns_empty_if_no_stores(self):
+        store = Store()
+        proxies = store.get_proxies()
+        self.assertIsNone(proxies)
+
+    def test_get_proxies_returns_empty_if_empty(self):
+        store = Store()
+        store.add_store()
+        proxies = store.get_proxies()
+        self.assertIsNone(proxies)
+
+    def test_get_proxies_returns_empty_if_filtered(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxies(filter_opts={'code': {'uk', }})
+
+        self.assertIsNone(actual)
+
+    def test_get_proxies_returns_proxies_if_not_filtered(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxies(filter_opts={'code': {'us', }})
+
+        self.assertEqual(actual[0], proxy)
+
+    def test_get_proxies_returns_empty_if_blacklisted(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxies(blacklist={(proxy[0], proxy[1]), })
+
+        self.assertIsNone(actual)
+
+    def test_get_proxies_returns_empty_if_filtered_and_blacklisted(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxies(filter_opts={'country': {'uk', }},
+                                   blacklist={(proxy[0], proxy[1]), })
+
+        self.assertIsNone(actual)
+
+    def test_get_proxies_returns_empty_if_not_filtered_and_blacklisted(self):
+        store = Store()
+        id = store.add_store()
+        proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
+
+        store.update_store(id, {proxy, })
+        actual = store.get_proxies(filter_opts={'code': {'us', }},
+                                   blacklist={(proxy[0], proxy[1]), })
+
+        self.assertIsNone(actual)
+
+    def test_get_proxies_returns_proxies_if_any(self):
+        store = Store()
+        id = store.add_store()
+        expected = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
+
+        store.update_store(id, {expected, })
+        actual = store.get_proxies()
+
+        self.assertEqual(actual[0], expected)
 
     def test_remove_proxy_removes_from_set(self):
         store = Store()
@@ -155,7 +228,7 @@ class TestStores(unittest.TestCase):
     def test_update_store_invalid_id_does_nothing(self):
         store = Store()
         proxy = Proxy('host', 'source', 'us', 'united states', True, 'type', 'source')
-        store.update_store(1, proxy)
+        store.update_store(1, {proxy, })
 
         proxy = store.get_proxy()
         self.assertIsNone(proxy)
