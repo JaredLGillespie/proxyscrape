@@ -529,25 +529,6 @@ class TestCollector(unittest.TestCase):
         for _, attrs in collector._resource_map.items():
             store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
-    def test(self):
-        from proxyscrape.integration import get_proxyscrape_resource
-        from proxyscrape.scrapers import add_resource_type
-
-        # Create proxyscrape api resource
-        api_resource = get_proxyscrape_resource(proxytype='http', timeout=5000, ssl='yes', anonymity='all',
-                                                country='us')
-
-        # Add api resource to new resource type
-        add_resource_type("api", api_resource)
-
-        # Create collector
-        api_collector = create_collector('api-collector', 'api')
-
-        # Get proxies
-        proxy = api_collector.get_proxy()
-
-        print(proxy)
-
 
 if __name__ == '__main__':
     unittest.main()
