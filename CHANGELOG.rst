@@ -10,6 +10,23 @@ The format is based on `Keep a Changelog`_ and this project adheres to `Semantic
 `Unreleased`_
 -------------
 
+`0.3.0`_ - 2019-08-18
+---------------------
+Fixed
+^^^^^
+- proxyscrape integration user-defined country codes actually work
+- proxyscrape integration type properly defined for 'all'
+- proxy-daily scrapers fixed (website changed)
+
+Added
+^^^^^
+- Python 3.7 Support
+- get_proxies(...) added for retrieving all proxies instead of just 1 (i.e. get_proxy(...))
+
+Changed
+^^^^^^^
+- Implicit filtering of proxies based on resource_type name removed
+
 `0.2.1`_ - 2019-06-19
 ---------------------
 Fixed
@@ -40,7 +57,8 @@ Added
 ^^^^^
 - Initial Version
 
-.. _Unreleased: https://github.com/JaredLGillespie/proxyscrape/compare/v0.2.1...HEAD
+.. _Unreleased: https://github.com/JaredLGillespie/proxyscrape/compare/v0.3.0...HEAD
+.. _0.3.0: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.3.0
 .. _0.2.1: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.2.1
 .. _0.2.0: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.2.0
 .. _0.1.1: https://github.com/JaredLGillespie/proxyscrape/releases/tag/v0.1.1
