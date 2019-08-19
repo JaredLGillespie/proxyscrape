@@ -31,7 +31,6 @@ try:
 except ImportError:
     from mock import Mock
 
-# TODO: Change these to not be *
 from proxyscrape.errors import (
      CollectorAlreadyDefinedError,
      CollectorNotFoundError,
