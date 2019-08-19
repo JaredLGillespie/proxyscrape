@@ -131,7 +131,7 @@ class Collector:
         if resource_types is not None:
             self._resource_types = set(resource_types) if is_iterable(resource_types) else {resource_types, }
             self._validate_resource_types(self._resource_types)
-            self._filter_opts = {'type': self._resource_types.copy()}
+            self._filter_opts = {}
         else:
             self._resource_types = None
             self._filter_opts = {}
