@@ -31,7 +31,6 @@ try:
 except ImportError:
     from mock import Mock
 
-# TODO: Change these to not be *
 from proxyscrape.errors import (
      CollectorAlreadyDefinedError,
      CollectorNotFoundError,
@@ -158,11 +157,12 @@ class TestCollector(unittest.TestCase):
     def test_apply_filter_adds_filter_multiple(self):
         collector = ps.Collector('http', 10, None)
         expected = collector._filter_opts
-        expected['type'].update({'socks4', 'socks5'})
+        expected['type'] = {'socks4', 'socks5'}
 
         collector.apply_filter({'type': {'socks4', 'socks5'}})
         actual = collector._filter_opts
 
+        self.assertEqual(len(expected), len(actual))
         self.assertEqual(expected['type'], actual['type'])
 
     def test_apply_filter_adds_filter_different_keys(self):
@@ -173,7 +173,7 @@ class TestCollector(unittest.TestCase):
         collector.apply_filter({'code': {'uk', 'us'}})
         actual = collector._filter_opts
 
-        self.assertEqual(expected['type'], actual['type'])
+        self.assertEqual(len(expected), len(actual))
         self.assertEqual(expected['code'], actual['code'])
 
     def test_blacklist_proxy_single(self):
@@ -250,7 +250,7 @@ class TestCollector(unittest.TestCase):
         for _, attrs in collector._resource_map.items():
             store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
-        store_mock.get_proxy.assert_called_once_with({'type': {'http', }}, collector._blacklist)
+        store_mock.get_proxy.assert_called_once_with({}, collector._blacklist)
         self.assertEqual(proxy, actual)
 
     def test_get_proxy_with_filter(self):
@@ -274,7 +274,7 @@ class TestCollector(unittest.TestCase):
         for _, attrs in collector._resource_map.items():
             store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
-        store_mock.get_proxy.assert_called_once_with({'type': {'http', }, 'code': {'us', }}, collector._blacklist)
+        store_mock.get_proxy.assert_called_once_with({'code': {'us', }}, collector._blacklist)
         self.assertEqual(proxy, actual)
 
     def test_get_proxy_doesnt_update_store_if_not_refreshed(self):
@@ -293,7 +293,7 @@ class TestCollector(unittest.TestCase):
         actual = collector.get_proxy()
 
         store_mock.update_store.assert_not_called()
-        store_mock.get_proxy.assert_called_once_with({'type': {'http', }}, collector._blacklist)
+        store_mock.get_proxy.assert_called_once_with({}, collector._blacklist)
         self.assertIsNone(actual)
 
     def test_get_proxies_no_filter(self):
@@ -318,7 +318,7 @@ class TestCollector(unittest.TestCase):
         for _, attrs in collector._resource_map.items():
             store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
-        store_mock.get_proxies.assert_called_once_with({'type': {'http', }}, collector._blacklist)
+        store_mock.get_proxies.assert_called_once_with({}, collector._blacklist)
 
         for proxy in proxies:
             self.assertIn(proxy, actual)
@@ -345,7 +345,7 @@ class TestCollector(unittest.TestCase):
         for _, attrs in collector._resource_map.items():
             store_mock.update_store.assert_called_with(attrs['id'], proxies)
 
-        store_mock.get_proxies.assert_called_once_with({'type': {'http', }, 'code': {'us', }}, collector._blacklist)
+        store_mock.get_proxies.assert_called_once_with({'code': {'us', }}, collector._blacklist)
 
         for proxy in proxies:
             self.assertIn(proxy, actual)
@@ -366,7 +366,7 @@ class TestCollector(unittest.TestCase):
         actual = collector.get_proxies()
 
         store_mock.update_store.assert_not_called()
-        store_mock.get_proxies.assert_called_once_with({'type': {'http', }}, collector._blacklist)
+        store_mock.get_proxies.assert_called_once_with({}, collector._blacklist)
         self.assertIsNone(actual)
 
     def test_remove_blacklist_single(self):

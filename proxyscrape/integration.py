@@ -109,7 +109,7 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
             type = None if proxytype == 'all' else proxytype
 
             for line in response.text.split():
-                host, port = line.split(':')
+                host, port = map(str, line.split(':'))
                 proxies.add(Proxy(host, port, code, None, anonymous, type, name))
 
             return proxies
