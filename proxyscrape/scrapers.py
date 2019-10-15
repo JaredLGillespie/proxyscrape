@@ -319,6 +319,50 @@ def get_spys_one(verbose=False):
     return proxies
 
 
+def get_proxynova():
+    def parse(soup):
+        table = soup.find('table', {'id': 'tbl_proxy_list'})
+        proxies = set()
+        protocol = "http"
+        for row in table.find('tbody').find_all('tr'):
+            cells = row.find_all('td')
+            if not cells[0].find("abbr"):
+                continue
+            parts = cells[0].find("abbr").text.split("'")
+            host = parts[1][8:] + parts[3]
+            port = cells[1].text.strip()
+            code = cells[5].find("img")['alt'].lower()
+            country = cells[5].find("a").text.split("\t")[0].lower()
+
+            anonymous = cells[6].find("span").text.lower() in ('anonymous', 'elite')
+            proxies.add(Proxy(host, port, code, country, anonymous, protocol, 'proxynova'))
+        return proxies
+    url = 'https://www.proxynova.com/proxy-server-list/'
+    proxies = set()
+    urls = set()
+    response = request_proxy_list(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    for a in soup.select("a"):
+        try:
+            if 'country-' in a['href'] and int(a.find("span").text[1:-1]) > 0:
+                urls.add(urljoin(url, a['href']))
+        except:
+            pass
+
+    status = True
+    while status:
+        try:
+            proxies = proxies.union(parse(soup))
+            status = len(urls)
+            if status:
+                url = urls.pop()
+                response = request_proxy_list(url)
+                soup = BeautifulSoup(response.content, 'html.parser')
+        except (AttributeError, KeyError):
+            raise InvalidHTMLError()
+    return proxies
+
+
 def get_us_proxies():
     url = 'https://www.us-proxy.org'
     response = request_proxy_list(url)
@@ -453,7 +497,8 @@ RESOURCE_MAP = {
     'ssl-proxy': get_ssl_proxies,
     'uk-proxy': get_uk_proxies,
     'us-proxy': get_us_proxies,
-    'spys-one': get_spys_one
+    'spys-one': get_spys_one,
+    'proxynova': get_proxynova
 }
 
 RESOURCE_TYPE_MAP = {
@@ -463,7 +508,8 @@ RESOURCE_TYPE_MAP = {
         'free-proxy-list',
         'proxy-daily-http',
         'anonymous-proxy',
-        'spys-one'
+        'spys-one',
+        'proxynova'
     },
     'https': {
         'us-proxy',
