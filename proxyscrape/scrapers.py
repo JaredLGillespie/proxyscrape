@@ -27,6 +27,8 @@ __all__ = ['add_resource', 'add_resource_type', 'get_resources', 'get_resource_t
 from bs4 import BeautifulSoup
 from threading import Lock
 import time
+from collections import OrderedDict
+from urllib.parse import urljoin
 
 from .errors import (
     InvalidHTMLError,
@@ -258,6 +260,65 @@ def get_uk_proxies():
         raise InvalidHTMLError()
 
 
+def get_spys_one(verbose=False):
+    def parse_dict(script):
+        rows = script.split(";")
+        new_rows = {}
+        for row in rows:
+            if not '=' in row:
+                continue
+            cells = row.split("=")
+            if "^" in cells[1]:
+                subcells = cells[1].split("^")
+                subcells[1] = new_rows[subcells[1]]
+                new_rows[cells[0]] = eval(subcells[0] + "^" + subcells[1], {"__builtins__": None}, {})
+            else:
+                new_rows[cells[0]] = cells[1]
+        return OrderedDict(sorted(new_rows.items(), key=lambda x: len(x[0]), reverse=True))
+
+    def parse(soup, source):
+        proxies = set()
+        Anonymities = {'ANM', 'HIA'}
+        ports_dict = parse_dict(soup.select("script")[3].text)
+        trs = soup.select("tr.spy1xx, tr.spy1x")
+        for row in trs:
+            cells = row.select("td")
+            if not '.' in cells[0].text:
+                continue
+            protocol = cells[1].text.split(" ")[0].lower()
+            host = cells[0].text.split("<", 1)[0].split("document")[0]
+            port = cells[0].find("script").text.split("+", 1)[1]
+            for key in ports_dict:
+                port = port.replace(key, str(ports_dict[key]))
+            port = eval("(" + port.replace("(", "str("), {"__builtins__": None}, {'str': str})
+            code = None
+            country = cells[3].find("a").text
+            anonymous = cells[2].text in Anonymities
+            proxies.add(Proxy(host, port, code, country, anonymous, protocol, source))
+        return proxies
+
+    proxies = set()
+    base_url = 'http://spys.one/en/free-proxy-list/'
+    # http://spys.one/en/https-ssl-proxy/ is not supported yet
+    urls = {'http://spys.one/en/free-proxy-list/', 'http://spys.one/en/anonymous-proxy-list/',
+            'http://spys.one/en/non-anonymous-proxy-list/', 'http://spys.one/en/socks-proxy-list/', 'http://spys.one/en/http-proxy-list/'}
+    for url in urls:
+        status = True
+        while status:
+            response = request_proxy_list(url)
+            try:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                proxies = proxies.union(parse(soup, 'spys-one'))
+                font = soup.select("font.spy14")[0]
+                status = 'Next' in font.text
+                if status:
+                    url = font.find_parent("a")['href']
+                    url = urljoin(base_url, url)
+            except (AttributeError, KeyError):
+                raise InvalidHTMLError()
+    return proxies
+
+
 def get_us_proxies():
     url = 'https://www.us-proxy.org'
     response = request_proxy_list(url)
@@ -391,7 +452,8 @@ RESOURCE_MAP = {
     'socks-proxy': get_socks_proxies,
     'ssl-proxy': get_ssl_proxies,
     'uk-proxy': get_uk_proxies,
-    'us-proxy': get_us_proxies
+    'us-proxy': get_us_proxies,
+    'spys-one': get_spys_one
 }
 
 RESOURCE_TYPE_MAP = {
@@ -400,14 +462,16 @@ RESOURCE_TYPE_MAP = {
         'uk-proxy',
         'free-proxy-list',
         'proxy-daily-http',
-        'anonymous-proxy'
+        'anonymous-proxy',
+        'spys-one'
     },
     'https': {
         'us-proxy',
         'uk-proxy',
         'free-proxy-list',
         'ssl-proxy',
-        'anonymous-proxy'
+        'anonymous-proxy',
+        'spys-one'
     },
     'socks4': {
         'socks-proxy',
@@ -415,6 +479,7 @@ RESOURCE_TYPE_MAP = {
     },
     'socks5': {
         'socks-proxy',
-        'proxy-daily-socks5'
+        'proxy-daily-socks5',
+        'spys-one'
     }
 }
