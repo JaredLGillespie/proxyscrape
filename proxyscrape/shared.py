@@ -36,9 +36,9 @@ from .errors import (
 Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'type', 'source'])
 
 
-def request_proxy_list(url):
+def request_proxy_list(url, **kwargs):
     try:
-        response = requests.get(url)
+        response = requests.get(url, kwargs)
     except requests.RequestException:
         raise RequestFailedError()
 
