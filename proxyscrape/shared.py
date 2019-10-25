@@ -38,7 +38,7 @@ Proxy = namedtuple('Proxy', ['host', 'port', 'code', 'country', 'anonymous', 'ty
 
 def request_proxy_list(url, **kwargs):
     try:
-        response = requests.get(url, kwargs)
+        response = requests.get(url, **kwargs)
     except requests.RequestException:
         raise RequestFailedError()
 
