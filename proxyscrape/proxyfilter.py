@@ -41,26 +41,26 @@ class Proxy_filter():
                 proxies += [proxy]
         return proxies
 
-    def workingProxies(self, timeout=6, test_url='https://httpbin.org/pi'):
+    def workingProxies(self, timeout=3, test_url='https://httpbin.org/ip'):
         """Concurrently checks if the proxies are
 	accessible from your network, and returns a list
 	of the working once. 
 
 	@timout: could be set to determine the waiting time, 6 is the default
-        @test_url: test_url is the site used to test the proxies, 'https://httpbin.org/pi' is the default
+        @test_url: test_url is the site used to test the proxies, 'https://httpbin.org/ip' is the default
 	"""
-        proxies = self.__proxies[:]
+        proxies = []
         def test_proxy(proxy):
             """Takes a proxy object and checks if it works for 
             test_url in timeout time"""
             proxy_port = ":".join([proxy.host, proxy.port])
             try:
-                r = requests(test_url, proxies={'http':proxy_port, 'https':proxy_port}, timeout=timeout)
-                return proxy
+                r = requests.get(test_url, proxies={'http':proxy_port, 'https':proxy_port}, timeout=timeout)
+                proxies.append(proxy)
             except Exception:
                 pass
         with concurrent.futures.ThreadPoolExecutor() as exector:
-            exector.map(test_proxy, proxies)
+            exector.map(test_proxy, self.__proxies)
         return proxies
 
     def get_proxies(self):
