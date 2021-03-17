@@ -301,7 +301,7 @@ def add_resource(name, func, resource_types=None):
         If 'name' is already a defined resource.
     """
     if name in RESOURCE_MAP:
-        raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
+        raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
     if resource_types is not None:
         if not is_iterable(resource_types):
@@ -310,12 +310,12 @@ def add_resource(name, func, resource_types=None):
         for resource_type in resource_types:
             if resource_type not in RESOURCE_TYPE_MAP:
                 raise InvalidResourceTypeError(
-                    '{} is not a defined resource type'.format(resource_type))
+                    f'{resource_type} is not a defined resource type')
 
     with _resource_lock:
         # Ensure not added by the time entered lock
         if name in RESOURCE_MAP:
-            raise ResourceAlreadyDefinedError('{} is already defined as a resource'.format(name))
+            raise ResourceAlreadyDefinedError(f'{name} is already defined as a resource')
 
         RESOURCE_MAP[name] = func
 
@@ -340,13 +340,13 @@ def add_resource_type(name, resources=None):
     """
     if name in RESOURCE_TYPE_MAP:
         raise ResourceTypeAlreadyDefinedError(
-            '{} is already defined as a resource type'.format(name))
+            f'{name} is already defined as a resource type')
 
     with _resource_type_lock:
         # Ensure not added by the time entered lock
         if name in RESOURCE_TYPE_MAP:
             raise ResourceTypeAlreadyDefinedError(
-                '{} is already defined as a resource type'.format(name))
+                f'{name} is already defined as a resource type')
 
         if resources is not None:
             if not is_iterable(resources):
@@ -355,7 +355,7 @@ def add_resource_type(name, resources=None):
 
             for resource in resources:
                 if resource not in RESOURCE_MAP:
-                    raise InvalidResourceError('{} is an invalid resource'.format(resource))
+                    raise InvalidResourceError(f'{resource} is an invalid resource')
         else:
             resources = set()
 
