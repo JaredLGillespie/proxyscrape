@@ -74,12 +74,12 @@ def create_collector(name, resource_types=None, refresh_interval=3600, resources
         If 'resource_type' is not a valid resource type.
     """
     if name in COLLECTORS:
-        raise CollectorAlreadyDefinedError('{} is already defined as a collector'.format(name))
+        raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
 
     with _collector_lock:
         # Ensure not added by the time entered lock
         if name in COLLECTORS:
-            raise CollectorAlreadyDefinedError('{} is already defined as a collector'.format(name))
+            raise CollectorAlreadyDefinedError(f'{name} is already defined as a collector')
 
         collector = Collector(resource_types, refresh_interval, resources)
         COLLECTORS[name] = collector
@@ -101,7 +101,7 @@ def get_collector(name):
     if name in COLLECTORS:
         return COLLECTORS[name]
 
-    raise CollectorNotFoundError('{} is not a defined collector'.format(name))
+    raise CollectorNotFoundError(f'{name} is not a defined collector')
 
 
 class Collector:
@@ -196,21 +196,21 @@ class Collector:
             return
 
         if not isinstance(filter_opts, dict):
-            raise InvalidFilterOptionError('{} must be a dictionary'.format(filter_opts))
+            raise InvalidFilterOptionError(f'{filter_opts} must be a dictionary')
 
         for key in filter_opts:
             if key not in FILTER_OPTIONS:
-                raise InvalidFilterOptionError('{} is an invalid filter option'.format(key))
+                raise InvalidFilterOptionError(f'{key} is an invalid filter option')
 
     def _validate_resource_types(self, resource_types):
         if set(resource_types).difference(RESOURCE_TYPE_MAP.keys()):
             raise InvalidResourceTypeError(
-                '{} defined an invalid resource type'.format(resource_types))
+                f'{resource_types} defined an invalid resource type')
 
     def _validate_resources(self, resources):
         for resource in resources:
             if resource not in RESOURCE_MAP:
-                raise InvalidResourceError('{} is an invalid resource'.format(resource))
+                raise InvalidResourceError(f'{resource} is an invalid resource')
 
     def apply_filter(self, filter_opts):
         """Applies a filter to the collector for retrieving proxies matching specific criteria.
@@ -391,7 +391,7 @@ class Collector:
             resource_type = proxy.source
             if resource_type not in self._resource_map:
                 raise InvalidResourceTypeError(
-                    '{} is not a valid resource type'.format(resource_type))
+                    f'{resource_type} is not a valid resource type')
 
             id = self._resource_map[resource_type]['id']
             self._store.remove_proxy(id, proxy)

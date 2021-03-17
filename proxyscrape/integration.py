@@ -71,33 +71,33 @@ def get_proxyscrape_resource(proxytype='all', timeout=10000, ssl='all', anonymit
     country = country.upper()
 
     if proxytype not in {'http', 'socks4', 'socks5', 'all'}:
-        raise ValueError('proxytype %s is not valid' % proxytype)
+        raise ValueError(f'proxytype {proxytype} is not valid' )
 
     if timeout <= 0:
-        raise ValueError('timeout %s should be an integer greater than 0' % proxytype)
+        raise ValueError(f'timeout {proxytype} should be an integer greater than 0' )
 
     if ssl not in {'yes', 'no', 'all'}:
-        raise ValueError('ssl %s is not valid' % ssl)
+        raise ValueError(f'ssl {ssl} is not valid' )
 
     if anonymity not in {'elite', 'anonymous', 'transparent', 'all'}:
-        raise ValueError('anonymity %s is not valid' % anonymity)
+        raise ValueError(f'anonymity {anonymity} is not valid' )
 
     if len(country) != 2 and country != 'ALL':
-        raise ValueError('country %s is not valid' % country)
+        raise ValueError(f'country {country} is not valid')
 
     name = '|'.join(['proxyscrape',
-                     'proxytype=%s' % proxytype,
-                     'timeout=%s' % timeout,
-                     'ssl=%s' % ssl,
-                     'anonymity=%s' % anonymity,
-                     'country=%s' % country])
+                     f'proxytype={proxytype}',
+                     f'timeout={timeout}',
+                     f'ssl={ssl}',
+                     f'anonymity={anonymity}',
+                     f'country={country}'])
 
     url = 'https://api.proxyscrape.com?request=getproxies' + \
-          '&proxytype=%s' % proxytype + \
-          '&timeout=%s' % timeout + \
-          '&ssl=%s' % ssl + \
-          '&anonymity=%s' % anonymity + \
-          '&country=%s' % country
+          f'&proxytype={proxytype}'  + \
+          f'&timeout={timeout}'  + \
+          f'&ssl={ssl}' + \
+          f'&anonymity={anonymity}' + \
+          f'&country={country}' 
 
     def func():
         response = request_proxy_list(url)
