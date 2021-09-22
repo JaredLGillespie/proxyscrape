@@ -97,7 +97,7 @@ def get_anonymous_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.select_one('.fpl-list table')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -122,7 +122,7 @@ def get_free_proxy_list_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.select_one('.fpl-list table')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -190,7 +190,7 @@ def get_socks_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.select_one('.fpl-list table')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -215,7 +215,7 @@ def get_ssl_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.select_one('.fpl-list table')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -239,7 +239,7 @@ def get_uk_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.select_one('.fpl-list table')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -264,7 +264,7 @@ def get_us_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.select_one('.fpl-list table')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
