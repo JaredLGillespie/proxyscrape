@@ -23,7 +23,6 @@
 __all__ = ['add_resource', 'add_resource_type', 'get_resources', 'get_resource_types', 'ProxyResource', 'RESOURCE_MAP',
            'RESOURCE_TYPE_MAP']
 
-
 from bs4 import BeautifulSoup
 from threading import Lock
 import time
@@ -42,6 +41,7 @@ from .shared import (
     Proxy,
     request_proxy_list
 )
+
 _resource_lock = Lock()
 _resource_type_lock = Lock()
 
@@ -56,6 +56,7 @@ class ProxyResource:
     :type func: function
     :type refresh_interval: int
     """
+
     def __init__(self, func, refresh_interval):
         self._func = func
         self._refresh_interval = refresh_interval
@@ -97,7 +98,7 @@ def get_anonymous_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.find('div', class_='table-responsive fpl-list')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -122,7 +123,7 @@ def get_free_proxy_list_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.find('div', class_='table-responsive fpl-list')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -141,56 +142,13 @@ def get_free_proxy_list_proxies():
         raise InvalidHTMLError()
 
 
-def _get_proxy_daily_proxies_parse_inner(element, type, source):
-    content = element.contents[0]
-    rows = content.replace('"', '').replace("'", '').split('\n')
-
-    proxies = set()
-    for row in rows:
-        row = row.strip()
-        if len(row) == 0:
-            continue
-
-        params = str(row).split(':')
-        params.extend([None, None, None, type, source])
-        proxies.add(Proxy(*params))
-    return proxies
-
-
-def get_proxy_daily_data_elements():
-    url = 'http://www.proxy-daily.com'
-    response = request_proxy_list(url)
-
-    try:
-        soup = BeautifulSoup(response.content, 'html.parser')
-        content = soup.find('div', {'id': 'free-proxy-list'})
-        return content.find_all(class_="freeProxyStyle")
-    except (AttributeError, KeyError):
-        raise InvalidHTMLError()
-
-
-def get_proxy_daily_http_proxies():
-    http_data_element = get_proxy_daily_data_elements()[0]
-    return _get_proxy_daily_proxies_parse_inner(http_data_element, 'http', 'proxy-daily-http')
-
-
-def get_proxy_daily_socks4_proxies():
-    socks4_data_element = get_proxy_daily_data_elements()[1]
-    return _get_proxy_daily_proxies_parse_inner(socks4_data_element, 'socks4', 'proxy-daily-socks4')
-
-
-def get_proxy_daily_socks5_proxies():
-    socks5_data_element = get_proxy_daily_data_elements()[2]
-    return _get_proxy_daily_proxies_parse_inner(socks5_data_element, 'socks5', 'proxy-daily-socks5')
-
-
 def get_socks_proxies():
     url = 'https://www.socks-proxy.net'
     response = request_proxy_list(url)
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.find('div', class_='table-responsive fpl-list')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -215,7 +173,7 @@ def get_ssl_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.find('div', class_='table-responsive fpl-list')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -239,7 +197,7 @@ def get_uk_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.find('div', class_='table-responsive fpl-list')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -264,7 +222,7 @@ def get_us_proxies():
 
     try:
         soup = BeautifulSoup(response.content, 'html.parser')
-        table = soup.find('table', {'id': 'proxylisttable'})
+        table = soup.find('div', class_='table-responsive fpl-list')
         proxies = set()
 
         for row in table.find('tbody').find_all('tr'):
@@ -385,9 +343,6 @@ def get_resources():
 RESOURCE_MAP = {
     'anonymous-proxy': get_anonymous_proxies,
     'free-proxy-list': get_free_proxy_list_proxies,
-    'proxy-daily-http': get_proxy_daily_http_proxies,
-    'proxy-daily-socks4': get_proxy_daily_socks4_proxies,
-    'proxy-daily-socks5': get_proxy_daily_socks5_proxies,
     'socks-proxy': get_socks_proxies,
     'ssl-proxy': get_ssl_proxies,
     'uk-proxy': get_uk_proxies,
@@ -399,7 +354,6 @@ RESOURCE_TYPE_MAP = {
         'us-proxy',
         'uk-proxy',
         'free-proxy-list',
-        'proxy-daily-http',
         'anonymous-proxy'
     },
     'https': {
@@ -411,10 +365,8 @@ RESOURCE_TYPE_MAP = {
     },
     'socks4': {
         'socks-proxy',
-        'proxy-daily-socks4'
     },
     'socks5': {
         'socks-proxy',
-        'proxy-daily-socks5'
     }
 }
